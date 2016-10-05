@@ -23,38 +23,38 @@
 ;; THE SOFTWARE.
 
 (defun qz-open-clear-buffer (name)
-  "Open buffer with specific name"
+  "Open buffer with specific name."
   (switch-to-buffer-other-window name)
   (erase-buffer))
 
 (defun qz-list-from-region (start end)
-  "Get list from region"
+  "Get list from region."
   (split-string (buffer-substring start end) "\n" t))
 
 (defun qz-table-p (list-field)
-  "Make sure the first is id_field and last is field_status"
+  "Make sure the first is id_field and last is field_status."
   (if (and (string-match "^id_" (car list-field))
 		   (string-match "_status$" (car (reverse list-field))))
 	  t
 	nil))
 
 (defun qz-class-open (name)
-  "Tag php plus class ci controller"
+  "Tag php plus class ci controller."
   (insert "<?php\n"
 		  "defined('BASEPATH') OR "
 		  "exit('No direct script access allowed');\n\n"
 		  (format "class %s extends CI_Controller\n{\n" (capitalize name))))
 
 (defun qz-name-controller (name)
-  "Get formatted file name for controller"
+  "Get formatted file name for controller."
   (concat (capitalize name) ".php"))
 
 (defun qz-name-view (name sub)
-  "Get formatted file name for view"
+  "Get formatted file name for view."
   (format "%s_%s.php" (downcase name) (downcase sub)))
 
 (defun qz-label (field)
-  "Replace underscore with space and capitalize it also remove 'Id '"
+  "Replace underscore with space and capitalize it also remove 'Id '."
   (replace-regexp-in-string
    "Id " "" (capitalize (replace-regexp-in-string "_" " " field))))
 
@@ -63,7 +63,7 @@
   (downcase (replace-regexp-in-string "^id_" "" id-field)))
 
 (defun qz-join-table-if-exists (list-field tab)
-  "Add join table on condition for selected region if needed"
+  "Add join table on condition for selected region if needed."
   (let ((fields list-field)
 		(id-field (car list-field))
 		list-join)
@@ -84,7 +84,7 @@
 	  (setq list-join (cdr list-join)))))
 
 (defun qz-resource-if-exists (list-field tab)
-  "Add resource from publicmodel if needed"
+  "Add resource from publicmodel if needed."
   (let ((fields list-field)
 		(id-field (car list-field))
 		list-id)
@@ -104,7 +104,7 @@
 		(insert "\n"))))
 
 (defun qz-input-post-file-if-exists (list-field tab)
-  "Add file post if needed"
+  "Add file post if needed."
   (let ((fields list-field)
 		(table (qz-name-table-from-id (car list-field)))
 	    list-file)
@@ -143,17 +143,17 @@
 		(insert "\n"))))
 
 (defun qz-view-open (name sub)
-  "Default opening file view"
+  "Default opening file view."
   (progn (insert "<?php include('inc_admin_atas.php');?>\n\n")
 		 (qz-title name sub)
 		 (insert "<?php include('inc_admin_pesan.php');?>\n\n")))
 
 (defun qz-view-close ()
-  "Default closing file view"
+  "Default closing file view."
   (insert "<?php include('inc_admin_bawah.php');?>"))
 
 (defun qz-title (name sub)
-  "Generate title from view sub name"
+  "Generate title from view sub name."
   (cond ((string-equal sub "index")
 		 (insert (format "<h3>Form Data %s</h3>\n\n" (qz-label name))))
 		((string-equal sub "data")
@@ -162,7 +162,7 @@
 		 (insert (format "<h3>Detail Data %s</h3>\n\n" (qz-label name))))))
 
 (defun qz-view-table (list-field controller)
-  "Generate table from fields"
+  "Generate table from fields."
   (let ((fields list-field)
 		(id-field (car list-field))
 		(table (qz-name-table-from-id (car list-field)))
@@ -244,7 +244,7 @@
 			(format "Tambah data %s</a>\n\n" table))))
 
 (defun qz-view-table-detail (list-field controller)
-  "Generate detail from fields"
+  "Generate detail from fields."
   (let ((fields list-field)
 		(id-field (car list-field))
 		(table (qz-name-table-from-id (car list-field))))
@@ -281,7 +281,7 @@
 			(format "Kembali ke data %s</a>\n\n" table))))
 
 (defun qz-form-multi-if-needed (list-field)
-  "Check if multipart needed"
+  "Check if multipart needed."
   (let ((fields list-field)
 		multi)
 	(setq multi nil)
@@ -301,7 +301,7 @@
 	  (setq multi ""))))
 
 (defun qz-form-dropdown (field)
-  "Codeigniter form dropdown"
+  "Codeigniter form dropdown."
   (insert "\t<div class=\"form-group\">\n"
 		  "\t\t<label class=\"control-label col-sm-2\">"
 		  (format "%s</label>\n" (qz-label field))
@@ -315,7 +315,7 @@
 		  "\t</div>\n\n"))
 
 (defun qz-form-textarea (field)
-  "Html textarea"
+  "Html textarea."
   (insert "\t<div class=\"form-group\">\n"
 		  "\t\t<label class=\"control-label col-sm-2\">"
 		  (format "%s</label>\n" (qz-label field))
@@ -330,7 +330,7 @@
 		  "\t</div>\n\n"))
 
 (defun qz-form-input (field)
-  "Html input file text password"
+  "Html input file text password."
   (let ((type "text")
 		(value (format
 				"<?php echo set_value('f_%s', @$row->%s);?>"
@@ -372,7 +372,7 @@
 			"\t</div>\n\n")))
 
 (defun qz-form-field-p (string field)
-  "Check available form from field"
+  "Check available form from field."
   (cond ((string-equal string "dropdown")
   		 (if (string-match "^id_" field)
   			 t
@@ -389,7 +389,7 @@
   		(t nil)))
 
 (defun qz-view-form (list-field controller)
-  "Generate html form from fields"
+  "Generate html form from fields."
   (let ((fields (cdr list-field))
 		(id-field (car list-field))
 		(table (qz-name-table-from-id (car list-field))))
@@ -428,7 +428,7 @@
 ;; function construct
 ;;
 (defun qz-function-construct ()
-  "Define php constructor"
+  "Define php constructor."
   (insert "\tpublic function __construct() {\n"
 		  "\t\tparent::__construct();\n"
 		  "\t\t$this->load->model('publicmodel', 'p');\n"
@@ -438,7 +438,7 @@
 ;; function index
 ;;
 (defun qz-function-index (list-field controller)
-  "Create function index for C U from crud"
+  "Create function index for C U from crud."
   (insert "\tpublic function index($aksi='tambahdata', $id='') {\n"
 		  "\t\t$data = array();\n"
 		  "\t\t$data['aksi'] = $aksi;\n\n")
@@ -457,7 +457,7 @@
 		  "\t}\n\n"))
 
 (defun qz-condition-update (list-field)
-  "Condition update in controller"
+  "Condition update in controller."
   (let ((table (qz-name-table-from-id (car list-field)))
 		(id-field (car list-field))
 		(field-status (car (reverse list-field))))
@@ -473,7 +473,7 @@
 			"\t\t}\n\n")))
 
 (defun qz-condition-click (list-field controller)
-  "Condition where button clicked from form"
+  "Condition where button clicked from form."
   (insert "\t\tif ($this->input->post('b_simpan')) {\n"
 		  "\t\t\tif ($this->form_validation->run() !== FALSE) {\n")
   (qz-data-input-post list-field)
@@ -483,7 +483,7 @@
 		  "\t\t\t}\n\t\t}\n\n"))
 
 (defun qz-condition-insert-update (list-field)
-  "Create condition to save data, base on insert or update"
+  "Create condition to save data, base on insert or update."
   (let ((id-field (car list-field))
 		(table (qz-name-table-from-id (car list-field))))
 	(insert (format "\t\t\t\tif ($%s = $this->input->post('f_%s')) {\n"
@@ -502,7 +502,7 @@
 			"\t\t\t\t}\n")))
 
 (defun qz-data-input-post (list-field)
-  "Change list-field to format array"
+  "Change list-field to format array."
   (let ((fields (cdr list-field))
 		(table (qz-name-table-from-id (car list-field))))
 	(while fields
@@ -532,7 +532,7 @@
 	(insert "\n")))
 
 (defun qz-rule-validation (field)
-  "Change field to ci rule validation"
+  "Change field to ci rule validation."
   (let (condition)
 	(if (or (string-match "_password$" field)
 			(string-match "_passwd$" field))
@@ -557,7 +557,7 @@
 ;; function update status
 ;;
 (defun qz-function-updatestatus (list-field controller)
-  "Create function update status"
+  "Create function update status."
   (let ((table (qz-name-table-from-id (car list-field)))
 		(table-status (car (reverse list-field))))
 	(insert "\tpublic function updatestatus($id, $status) {\n"
@@ -579,7 +579,7 @@
 ;; function data
 ;;
 (defun qz-function-data (list-field controller)
-  "Create function data for R from crud"
+  "Create function data for R from crud."
   (let ((table (qz-name-table-from-id (car list-field)))
 		(table-status (car (reverse list-field))))
 	(insert "\tpublic function data($halaman=0) {\n"
@@ -609,7 +609,7 @@
 ;; function detail
 ;;
 (defun qz-function-detail (list-field controller)
-  "Create function detail"
+  "Create function detail."
   (let ((table (qz-name-table-from-id (car list-field))))
 	(insert "\tpublic function detail($id) {\n"
 			"\t\t$data = array();\n\n")
@@ -625,7 +625,7 @@
 ;; commands from here
 ;;
 (defun qz-create-controller ()
-  "Create controller from table fields in region"
+  "Create controller from table fields in region."
   (interactive)
   (if (use-region-p)
 	  (let ((list-field
@@ -646,7 +646,7 @@
 
 (defun qz-create-publicmodel ()
   "Start creating file buffer for publicmodel."
-  "Next, place cursor inside and command qz-create-model-function"
+  "Next, place cursor inside and command qz-create-model-function."
   (interactive)
   (progn (qz-open-clear-buffer "Publicmodel.php")
 		 (insert "<?php\n"
@@ -661,7 +661,7 @@
 		 (previous-line)))
 
 (defun qz-create-model-function ()
-  "Need to get ntab, id_field, field_label, field_status"
+  "Need to get ntab, id_field, field_label."
   (interactive)
   (let ((ntab (string-to-number (read-from-minibuffer
 								 "Number of tab: " "1")))
@@ -701,7 +701,7 @@
 	  (print "Something wrong with input"))))
 
 (defun qz-create-view-index ()
-  "Create view form for input and update"
+  "Create view form for input and update."
   (interactive)
   (if (use-region-p)
 	  (let ((list-field
@@ -717,7 +717,7 @@
 	(print "No region selected")))
 
 (defun qz-create-view-data ()
-  "Create view data from controller"
+  "Create view data from controller."
   (interactive)
   (if (use-region-p)
 	  (let ((list-field
@@ -733,7 +733,7 @@
 	(print "No region selected")))
 
 (defun qz-create-view-detail ()
-  "Create view detail from controller"
+  "Create view detail from controller."
   (interactive)
   (if (use-region-p)
 	  (let ((list-field
