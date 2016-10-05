@@ -1,8 +1,26 @@
+;; Copyright (C) 2016  Panji Kusuma
 
 ;; Author: Panji Kusuma <epanji@gmail.com>
-;; Version: 0.0.9
+;; Version: 0.1.1
 ;; Created: 28 September 2016
 ;; Keywords: codeigniter ci qzuma
+
+;; Permission is hereby granted, free of charge, to any person obtaining a copy
+;; of this software and associated documentation files (the "Software"), to deal
+;; in the Software without restriction, including without limitation the rights
+;; to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+;; copies of the Software, and to permit persons to whom the Software is
+;; furnished to do so, subject to the following conditions:
+;; The above copyright notice and this permission notice shall be included in
+;; all copies or substantial portions of the Software.
+
+;; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+;; IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+;; FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+;; AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+;; LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+;; THE SOFTWARE.
 
 (defun qz-open-clear-buffer (name)
   "Open buffer with specific name"
@@ -28,11 +46,11 @@
 		  (format "class %s extends CI_Controller\n{\n" (capitalize name))))
 
 (defun qz-name-controller (name)
-  "Get formated file name for controller"
+  "Get formatted file name for controller"
   (concat (capitalize name) ".php"))
 
 (defun qz-name-view (name sub)
-  "Get formated file name for view"
+  "Get formatted file name for view"
   (format "%s_%s.php" (downcase name) (downcase sub)))
 
 (defun qz-label (field)
@@ -44,17 +62,13 @@
   "Get table name from id-field."
   (downcase (replace-regexp-in-string "^id_" "" id-field)))
 
-;; (defun qz-name-table-from-status (status-field)
-;;   "Get table name from status-field."
-;;   (downcase (replace-regexp-in-string "_status$" "" status-field)))
-
 (defun qz-join-table-if-exists (list-field tab)
   "Add join table on condition for selected region if needed"
   (let ((fields list-field)
-		(id_table (car list-field))
+		(id-field (car list-field))
 		list-join)
 	(while fields
-	  (if (string-match (format "^id_[^%s]" id_table) (car fields))
+	  (if (string-match (format "^id_[^%s]" id-field) (car fields))
 		  (push (car fields) list-join))
 	  (setq fields (cdr fields)))
 	(if list-join
@@ -65,17 +79,17 @@
 					  (qz-name-table-from-id (car list-join))
 					  (qz-name-table-from-id (car list-join))
 					  (car list-join)
-					  (qz-name-table-from-id id_table)
+					  (qz-name-table-from-id id-field)
 					  (car list-join)))
 	  (setq list-join (cdr list-join)))))
 
 (defun qz-resource-if-exists (list-field tab)
   "Add resource from publicmodel if needed"
   (let ((fields list-field)
-		(id_table (car list-field))
+		(id-field (car list-field))
 		list-id)
 	(while fields
-	  (if (string-match (format "^id_[^%s]" id_table) (car fields))
+	  (if (string-match (format "^id_[^%s]" id-field) (car fields))
 		  (push (car fields) list-id))
 	  (setq fields (cdr fields)))
 	(if list-id
@@ -451,7 +465,7 @@
 	(insert "\t\t\t$this->form_validation->set_rules"
 			(format "('f_%s', '%s', 'required');\n"
 					id-field (qz-label id-field)))
-	(qz-join-table-if-exists (cdr list-field) "\t\t\t")
+	(qz-join-table-if-exists list-field "\t\t\t")
 	(insert (format "\t\t\t$this->db->where('%s', '1');\n" field-status)
 			(format "\t\t\t$this->db->where('%s', $id);\n" id-field)
 			(format "\t\t\t$data['record_%s'] = $this->db->get('%s');\n"
@@ -627,7 +641,7 @@
 				   (qz-function-data list-field controller)
 				   (qz-function-detail list-field controller)
 				   (insert "}"))
-		  (print "Selected region not well formated")))
+		  (print "Selected region not well formatted")))
 	(print "No region selected")))
 
 (defun qz-create-publicmodel ()
@@ -699,7 +713,7 @@
 				   (qz-view-open (car list-field) "index")
 				   (qz-view-form list-field controller)
 				   (qz-view-close))
-		  (print "Selected region not well formated")))
+		  (print "Selected region not well formatted")))
 	(print "No region selected")))
 
 (defun qz-create-view-data ()
@@ -715,7 +729,7 @@
 				   (qz-view-open (car list-field) "data")
 				   (qz-view-table list-field controller)
 				   (qz-view-close))
-		  (print "Selected region not well formated")))
+		  (print "Selected region not well formatted")))
 	(print "No region selected")))
 
 (defun qz-create-view-detail ()
@@ -731,7 +745,7 @@
 				   (qz-view-open (car list-field) "detail")
 				   (qz-view-table-detail list-field controller)
 				   (qz-view-close))
-		  (print "Selected region not well formated")))
+		  (print "Selected region not well formatted")))
 	(print "No region selected")))
 
 ;; end qz-codeigniter.el
