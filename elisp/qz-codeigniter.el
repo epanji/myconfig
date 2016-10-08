@@ -1,7 +1,7 @@
 ;; Copyright (C) 2016  Panji Kusuma
 
 ;; Author: Panji Kusuma <epanji@gmail.com>
-;; Version: 0.1.1
+;; Version: 0.1.2
 ;; Created: 28 September 2016
 ;; Keywords: codeigniter ci qzuma
 
@@ -64,32 +64,32 @@
 
 (defun qz-join-table-if-exists (list-field tab)
   "Add join table on condition for selected region if needed."
-  (let ((fields list-field)
-		(id-field (car list-field))
+  (let ((fields (cdr list-field))
+		(table (qz-name-table-from-id (car list-field)))
 		list-join)
 	(while fields
-	  (if (string-match (format "^id_[^%s]" id-field) (car fields))
+	  (if (string-match "^id_" (car fields))
 		  (push (car fields) list-join))
 	  (setq fields (cdr fields)))
 	(if list-join
-		(setq list-join (reverse list-join)))
-	(while list-join
+		(setq fields (reverse list-join)))
+	(while fields
 	  (insert tab)
 	  (insert (format "$this->db->join('%s', '%s.%s=%s.%s');\n"
-					  (qz-name-table-from-id (car list-join))
-					  (qz-name-table-from-id (car list-join))
-					  (car list-join)
-					  (qz-name-table-from-id id-field)
-					  (car list-join)))
-	  (setq list-join (cdr list-join)))))
+					  (qz-name-table-from-id (car fields))
+					  (qz-name-table-from-id (car fields))
+					  (car fields)
+					  table
+					  (car fields)))
+	  (setq fields (cdr fields)))))
 
 (defun qz-resource-if-exists (list-field tab)
   "Add resource from publicmodel if needed."
-  (let ((fields list-field)
-		(id-field (car list-field))
+  (let ((fields (cdr list-field))
+		(table (qz-name-table-from-id (car list-field)))
 		list-id)
 	(while fields
-	  (if (string-match (format "^id_[^%s]" id-field) (car fields))
+	  (if (string-match "^id_" (car fields))
 		  (push (car fields) list-id))
 	  (setq fields (cdr fields)))
 	(if list-id
