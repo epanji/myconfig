@@ -1,7 +1,7 @@
 ;; Copyright (C) 2016  Panji Kusuma
 
 ;; Author: Panji Kusuma <epanji@gmail.com>
-;; Version: 0.1.2
+;; Version: 0.1.3
 ;; Created: 28 September 2016
 ;; Keywords: codeigniter ci qzuma
 
@@ -110,6 +110,9 @@
 	    list-file)
 	(while fields
 	  (if (or (string-match "_file$" (car fields))
+			  (string-match "_video$" (car fields))
+			  (string-match "_audio$" (car fields))
+			  (string-match "_suara$" (car fields))
 			  (string-match "_icon$" (car fields))
 			  (string-match "_logo$" (car fields))
 			  (string-match "_image$" (car fields))
@@ -199,19 +202,57 @@
 	(while fields
 	  (if (not (or (string-match "^id_" (car fields))
 				   (string-match "_status$" (car fields))))
-		  (if (or (string-match "_icon$" (car fields))
-				  (string-match "_logo$" (car fields))
-				  (string-match "_image$" (car fields))
-				  (string-match "_photo$" (car fields))
-				  (string-match "_picture$" (car fields))
-				  (string-match "_foto$" (car fields))
-				  (string-match "_gambar$" (car fields)))
-			  (insert "\t\t\t\t<td><img width=\"100\" alt=\"-\" src=\""
-					  (format "<?php echo base_url();?>uploads/%s/" table)
-					  (format "<?php echo $row->%s;?>\" /></td>\n"
-							  (car fields)))
-		  (insert (format "\t\t\t\t<td><?php echo $row->%s;?></td>\n"
-						  (car fields)))))
+		  (cond ((or (string-match "_icon$" (car fields))
+					 (string-match "_logo$" (car fields))
+					 (string-match "_image$" (car fields))
+					 (string-match "_photo$" (car fields))
+					 (string-match "_picture$" (car fields))
+					 (string-match "_foto$" (car fields))
+					 (string-match "_gambar$" (car fields)))
+				 (insert "\t\t\t\t<td><img width=\"100\" alt=\"-\" src=\""
+						 "<?php echo base_url();?>"
+						 (format "uploads/%s/" table)
+						 (format "<?php echo $row->%s;?>\" /></td>\n"
+								 (car fields))))
+				((or (string-match "_audio$" (car fields))
+					 (string-match "_suara$" (car fields)))
+				 (insert "\t\t\t\t<td>\n"
+						 "\t\t\t\t\t<audio controls>\n"
+						 "\t\t\t\t\t\t<source src=\"<?php echo "
+						 (format "base_url();?>uploads/%s/" table)
+						 (format "<?php echo $row->%s;?>\" " (car fields))
+						 "type=\"audio/ogg\">\n"
+						 "\t\t\t\t\t\t<source src=\"<?php echo "
+						 (format "base_url();?>uploads/%s/" table)
+						 (format "<?php echo $row->%s;?>\" " (car fields))
+						 "type=\"audio/mpeg\">\n"
+						 "\t\t\t\t\t\t<source src=\"<?php echo "
+						 (format "base_url();?>uploads/%s/" table)
+						 (format "<?php echo $row->%s;?>\" " (car fields))
+						 "type=\"audio/mp4\">\n"
+						 "\t\t\t\t\t\tYour browser does not support the "
+						 "audio element.\n"
+						 "\t\t\t\t\t</audio>\n"
+						 "\t\t\t\t</td>\n"))
+				((string-match "_video$" (car fields))
+				 (insert "\t\t\t\t<td>\n"
+						 "\t\t\t\t\t<video width=\"320\" height=\"240\" "
+						 "controls>\n"
+						 "\t\t\t\t\t\t<source src=\"<?php echo "
+						 (format "base_url();?>uploads/%s/" table)
+						 (format "<?php echo $row->%s;?>\" " (car fields))
+						 "type=\"video/mp4\">\n"
+						 "\t\t\t\t\t\t<source src=\"<?php echo "
+						 (format "base_url();?>uploads/%s/" table)
+						 (format "<?php echo $row->%s;?>\" " (car fields))
+						 "type=\"video/ogg\">\n"
+						 "\t\t\t\t\t\tYour browser does not support the "
+						 "video tag.\n"
+						 "\t\t\t\t\t</video>\n"
+						 "\t\t\t\t</td>\n"))
+				(t (insert "\t\t\t\t<td><?php echo "
+						   (format "$row->%s;?></td>\n"
+								   (car fields))))))
 	  (setq fields (cdr fields)))
 	(insert "\n")
 	(insert "\t\t\t\t<td><a href=\"<?php echo base_url();?>"
@@ -254,23 +295,66 @@
 	  (if (not (or (string-match "^id_" (car fields))
 				   (string-match "_status$" (car fields))))
 		  (progn (insert "\t<tr>\n"
-				  (format "\t\t<td width=\"20%%\">%s</td>\n"
-						  (qz-label (car fields)))
-				  "\t\t<td width=\"10\">:</td>\n")
-				 (if (or (string-match "_icon$" (car fields))
-						 (string-match "_logo$" (car fields))
-						 (string-match "_image$" (car fields))
-						 (string-match "_photo$" (car fields))
-						 (string-match "_picture$" (car fields))
-						 (string-match "_foto$" (car fields))
-						 (string-match "_gambar$" (car fields)))
-					 (insert "\t\t<td><img width=\"300\" alt=\"-\" \n"
-							 "\t\t\tsrc=\"<?php echo base_url();?>"
-							 (format "uploads/%s/" table)
-							 (format "<?php echo $row->%s;?>\" /></td>\n"
-									 (car fields)))
-				   (insert (format "\t\t<td><?php echo $row->%s;?></td>\n"
-								   (car fields))))
+						 (format "\t\t<td width=\"20%%\">%s</td>\n"
+								 (qz-label (car fields)))
+						 "\t\t<td width=\"10\">:</td>\n")
+				 (cond ((or (string-match "_icon$" (car fields))
+							(string-match "_logo$" (car fields))
+							(string-match "_image$" (car fields))
+							(string-match "_photo$" (car fields))
+							(string-match "_picture$" (car fields))
+							(string-match "_foto$" (car fields))
+							(string-match "_gambar$" (car fields)))
+						(insert "\t\t<td><img width=\"300\" alt=\"-\" \n"
+								"\t\t\tsrc=\"<?php echo base_url();?>"
+								(format "uploads/%s/" table)
+								(format "<?php echo $row->%s;?>\" "
+										(car fields))
+								"/></td>\n"))
+					   ((or (string-match "_audio$" (car fields))
+							(string-match "_suara$" (car fields)))
+						(insert "\t\t<td>\n"
+								"\t\t\t<audio controls>\n"
+								"\t\t\t\t<source src=\"<?php echo "
+								(format "base_url();?>uploads/%s/" table)
+								(format "<?php echo $row->%s;?>\" "
+										(car fields))
+								"type=\"audio/ogg\">\n"
+								"\t\t\t\t<source src=\"<?php echo "
+								(format "base_url();?>uploads/%s/" table)
+								(format "<?php echo $row->%s;?>\" "
+										(car fields))
+								"type=\"audio/mpeg\">\n"
+								"\t\t\t\t<source src=\"<?php echo "
+								(format "base_url();?>uploads/%s/" table)
+								(format "<?php echo $row->%s;?>\" "
+										(car fields))
+								"type=\"audio/mp4\">\n"
+								"\t\t\t\tYour browser does not support the "
+								"audio element.\n"
+								"\t\t\t</audio>\n"
+								"\t\t</td>\n"))
+					   ((string-match "_video$" (car fields))
+						(insert "\t\t<td>\n"
+								"\t\t\t<video width=\"320\" height=\"240\" "
+								"controls>\n"
+								"\t\t\t\t<source src=\"<?php echo "
+								(format "base_url();?>uploads/%s/" table)
+								(format "<?php echo $row->%s;?>\" "
+										(car fields))
+								"type=\"video/mp4\">\n"
+								"\t\t\t\t<source src=\"<?php echo "
+								(format "base_url();?>uploads/%s/" table)
+								(format "<?php echo $row->%s;?>\" "
+										(car fields))
+								"type=\"video/ogg\">\n"
+								"\t\t\t\tYour browser does not support the "
+								"video tag.\n"
+								"\t\t\t</video>\n"
+								"\t\t</td>\n"))
+					   (t (insert "\t\t<td><?php echo "
+								  (format "$row->%s;?></td>\n"
+										  (car fields)))))
 				 (insert "\t</tr>\n")))
 	  (setq fields (cdr fields)))
 	(insert "\n")
@@ -286,7 +370,11 @@
 		multi)
 	(setq multi nil)
 	(while fields
-	  (if (or (string-match "_icon$" (car fields))
+	  (if (or (string-match "_file$" (car fields))
+			  (string-match "_video$" (car fields))
+			  (string-match "_audio$" (car fields))
+			  (string-match "_suara$" (car fields))
+			  (string-match "_icon$" (car fields))
 			  (string-match "_logo$" (car fields))
 			  (string-match "_image$" (car fields))
 			  (string-match "_photo$" (car fields))
@@ -343,7 +431,11 @@
 	(cond ((string-match "_password$" field)
 		   (progn (setq type "password")
 				  (setq value "")))
-		  ((or (string-match "_icon$" (car fields))
+		  ((or (string-match "_file$" (car fields))
+			   (string-match "_video$" (car fields))
+			   (string-match "_audio$" (car fields))
+			   (string-match "_suara$" (car fields))
+			   (string-match "_icon$" (car fields))
 			   (string-match "_logo$" (car fields))
 			   (string-match "_image$" (car fields))
 			   (string-match "_photo$" (car fields))
@@ -508,6 +600,9 @@
 	(while fields
 	  (if (or (string-match "_status$" (car fields))
 			  (string-match "_file$" (car fields))
+			  (string-match "_video$" (car fields))
+			  (string-match "_audio$" (car fields))
+			  (string-match "_suara$" (car fields))
 			  (string-match "_icon$" (car fields))
 			  (string-match "_logo$" (car fields))
 			  (string-match "_image$" (car fields))
@@ -540,6 +635,9 @@
 	  (setq condition ""))
 	(if (or (string-match "_status$" field)
 			(string-match "_file$" field)
+			(string-match "_video$" field)
+			(string-match "_audio$" field)
+			(string-match "_suara$" field)
 			(string-match "_icon$" field)
 			(string-match "_logo$" field)
 			(string-match "_image$" field)
