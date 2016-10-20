@@ -111,8 +111,15 @@
 	(while fields
 	  (if (or (string-match "_file$" (car fields))
 			  (string-match "_video$" (car fields))
+			  (string-match "_clip$" (car fields))
+			  (string-match "_movie$" (car fields))
 			  (string-match "_audio$" (car fields))
+			  (string-match "_sound$" (car fields))
+			  (string-match "_song$" (car fields))
+			  (string-match "_music$" (car fields))
 			  (string-match "_suara$" (car fields))
+			  (string-match "_lagu$" (car fields))
+			  (string-match "_musik$" (car fields))
 			  (string-match "_icon$" (car fields))
 			  (string-match "_logo$" (car fields))
 			  (string-match "_image$" (car fields))
@@ -215,7 +222,12 @@
 						 (format "<?php echo $row->%s;?>\" /></td>\n"
 								 (car fields))))
 				((or (string-match "_audio$" (car fields))
-					 (string-match "_suara$" (car fields)))
+					 (string-match "_sound$" (car fields))
+					 (string-match "_song$" (car fields))
+					 (string-match "_music$" (car fields))
+					 (string-match "_suara$" (car fields))
+					 (string-match "_lagu$" (car fields))
+					 (string-match "_musik$" (car fields)))
 				 (insert "\t\t\t\t<td>\n"
 						 "\t\t\t\t\t<audio controls>\n"
 						 "\t\t\t\t\t\t<source src=\"<?php echo "
@@ -234,7 +246,9 @@
 						 "audio element.\n"
 						 "\t\t\t\t\t</audio>\n"
 						 "\t\t\t\t</td>\n"))
-				((string-match "_video$" (car fields))
+				((or (string-match "_video$" (car fields))
+					 (string-match "_clip$" (car fields))
+					 (string-match "_movie$" (car fields)))
 				 (insert "\t\t\t\t<td>\n"
 						 "\t\t\t\t\t<video width=\"320\" height=\"240\" "
 						 "controls>\n"
@@ -312,7 +326,12 @@
 										(car fields))
 								"/></td>\n"))
 					   ((or (string-match "_audio$" (car fields))
-							(string-match "_suara$" (car fields)))
+							(string-match "_sound$" (car fields))
+							(string-match "_song$" (car fields))
+							(string-match "_music$" (car fields))
+							(string-match "_suara$" (car fields))
+							(string-match "_lagu$" (car fields))
+							(string-match "_musik$" (car fields)))
 						(insert "\t\t<td>\n"
 								"\t\t\t<audio controls>\n"
 								"\t\t\t\t<source src=\"<?php echo "
@@ -334,7 +353,9 @@
 								"audio element.\n"
 								"\t\t\t</audio>\n"
 								"\t\t</td>\n"))
-					   ((string-match "_video$" (car fields))
+					   ((or (string-match "_video$" (car fields))
+							(string-match "_clip$" (car fields))
+							(string-match "_movie$" (car fields)))
 						(insert "\t\t<td>\n"
 								"\t\t\t<video width=\"320\" height=\"240\" "
 								"controls>\n"
@@ -372,8 +393,15 @@
 	(while fields
 	  (if (or (string-match "_file$" (car fields))
 			  (string-match "_video$" (car fields))
+			  (string-match "_clip$" (car fields))
+			  (string-match "_movie$" (car fields))
 			  (string-match "_audio$" (car fields))
+			  (string-match "_sound$" (car fields))
+			  (string-match "_song$" (car fields))
+			  (string-match "_music$" (car fields))
 			  (string-match "_suara$" (car fields))
+			  (string-match "_lagu$" (car fields))
+			  (string-match "_musik$" (car fields))
 			  (string-match "_icon$" (car fields))
 			  (string-match "_logo$" (car fields))
 			  (string-match "_image$" (car fields))
@@ -433,8 +461,15 @@
 				  (setq value "")))
 		  ((or (string-match "_file$" (car fields))
 			   (string-match "_video$" (car fields))
+			   (string-match "_clip$" (car fields))
+			   (string-match "_movie$" (car fields))
 			   (string-match "_audio$" (car fields))
+			   (string-match "_sound$" (car fields))
+			   (string-match "_song$" (car fields))
+			   (string-match "_music$" (car fields))
 			   (string-match "_suara$" (car fields))
+			   (string-match "_lagu$" (car fields))
+			   (string-match "_musik$" (car fields))
 			   (string-match "_icon$" (car fields))
 			   (string-match "_logo$" (car fields))
 			   (string-match "_image$" (car fields))
@@ -601,8 +636,15 @@
 	  (if (or (string-match "_status$" (car fields))
 			  (string-match "_file$" (car fields))
 			  (string-match "_video$" (car fields))
+			  (string-match "_clip$" (car fields))
+			  (string-match "_movie$" (car fields))
 			  (string-match "_audio$" (car fields))
+			  (string-match "_sound$" (car fields))
+			  (string-match "_song$" (car fields))
+			  (string-match "_music$" (car fields))
 			  (string-match "_suara$" (car fields))
+			  (string-match "_lagu$" (car fields))
+			  (string-match "_musik$" (car fields))
 			  (string-match "_icon$" (car fields))
 			  (string-match "_logo$" (car fields))
 			  (string-match "_image$" (car fields))
@@ -636,8 +678,15 @@
 	(if (or (string-match "_status$" field)
 			(string-match "_file$" field)
 			(string-match "_video$" field)
+			(string-match "_clip$" field)
+			(string-match "_movie$" field)
 			(string-match "_audio$" field)
+			(string-match "_sound$" field)
+			(string-match "_song$" field)
+			(string-match "_music$" field)
 			(string-match "_suara$" field)
+			(string-match "_lagu$" field)
+			(string-match "_musik$" field)
 			(string-match "_icon$" field)
 			(string-match "_logo$" field)
 			(string-match "_image$" field)
