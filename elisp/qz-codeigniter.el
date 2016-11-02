@@ -1,7 +1,7 @@
 ;; Copyright (C) 2016  Panji Kusuma
 
 ;; Author: Panji Kusuma <epanji@gmail.com>
-;; Version: 0.1.3
+;; Version: 0.1.4
 ;; Created: 28 September 2016
 ;; Keywords: codeigniter ci qzuma
 
@@ -459,35 +459,35 @@
 	(cond ((string-match "_password$" field)
 		   (progn (setq type "password")
 				  (setq value "")))
-		  ((or (string-match "_file$" (car fields))
-			   (string-match "_video$" (car fields))
-			   (string-match "_clip$" (car fields))
-			   (string-match "_movie$" (car fields))
-			   (string-match "_audio$" (car fields))
-			   (string-match "_sound$" (car fields))
-			   (string-match "_song$" (car fields))
-			   (string-match "_music$" (car fields))
-			   (string-match "_suara$" (car fields))
-			   (string-match "_lagu$" (car fields))
-			   (string-match "_musik$" (car fields))
-			   (string-match "_icon$" (car fields))
-			   (string-match "_logo$" (car fields))
-			   (string-match "_image$" (car fields))
-			   (string-match "_photo$" (car fields))
-			   (string-match "_picture$" (car fields))
-			   (string-match "_foto$" (car fields))
-			   (string-match "_gambar$" (car fields)))
+		  ((or (string-match "_file$" field)
+			   (string-match "_video$" field)
+			   (string-match "_clip$" field)
+			   (string-match "_movie$" field)
+			   (string-match "_audio$" field)
+			   (string-match "_sound$" field)
+			   (string-match "_song$" field)
+			   (string-match "_music$" field)
+			   (string-match "_suara$" field)
+			   (string-match "_lagu$" field)
+			   (string-match "_musik$" field)
+			   (string-match "_icon$" field)
+			   (string-match "_logo$" field)
+			   (string-match "_image$" field)
+			   (string-match "_photo$" field)
+			   (string-match "_picture$" field)
+			   (string-match "_foto$" field)
+			   (string-match "_gambar$" field))
 		   (progn (setq type "file")
 				  (setq value "")))
-		  ((or (string-match "_tanggal$" (car fields))
-			   (string-match "_tgl$" (car fields))
-			   (string-match "_date$" (car fields))
-			   (string-match "_datetime$" (car fields)))
+		  ((or (string-match "_tanggal$" field)
+			   (string-match "_tgl$" field)
+			   (string-match "_date$" field)
+			   (string-match "_datetime$" field))
 		   (progn (setq type "text")
 				  (setq class " datepicker")))
-		  ((or (string-match "_waktu$" (car fields))
-			   (string-match "_pukul$" (car fields))
-			   (string-match "_time$" (car fields)))
+		  ((or (string-match "_waktu$" field)
+			   (string-match "_pukul$" field)
+			   (string-match "_time$" field))
 		   (progn (setq type "text")
 				  (setq class " timepicker")))
 		  (t (setq type "text")))
@@ -573,7 +573,7 @@
   (insert "\t\t$this->form_validation->set_error_delimiters"
 		  "('<br /><span class=\"help-block error\">', "
 		  "'</span>');\n")
-  (mapcar 'qz-rule-validation (cdr list-field))
+  (mapc 'qz-rule-validation (cdr list-field))
   (insert "\n")
   (qz-condition-update list-field)
   (qz-condition-click list-field controller)
@@ -763,7 +763,7 @@
 	(qz-join-table-if-exists list-field "\t\t")
 	(insert (format "\t\t$this->db->where('%s', $id);\n" (car list-field))
 			(format "\t\t$data['%s'] = $this->db->get('%s');\n\n"
-					table table table)
+					table table)
 			(format "\t\t$this->load->view('%s_detail', $data);\n"
 					controller)
 			"\t}\n\n")))
@@ -792,8 +792,8 @@
 	(print "No region selected")))
 
 (defun qz-create-publicmodel ()
-  "Start creating file buffer for publicmodel."
-  "Next, place cursor inside and command qz-create-model-function."
+  "Start creating file buffer for publicmodel.
+Next, place cursor inside and command qz-create-model-function."
   (interactive)
   (progn (qz-open-clear-buffer "Publicmodel.php")
 		 (insert "<?php\n"
@@ -805,7 +805,7 @@
 				 "\t\tparent::__construct();\n"
 				 "\t}\n\n")
 		 (insert "}")
-		 (previous-line)))
+		 (with-no-warnings (previous-line))))
 
 (defun qz-create-model-function ()
   "Need to get ntab, id_field, field_label."
