@@ -1124,7 +1124,7 @@ Next, place cursor inside and command qz-create-model-function."
 					 (read-from-minibuffer "Controller name: "))))
     (qz-open-clear-buffer (qz-name-view controller "home"))
 	(qz-view-open "" "")
-	(qz-insert 0 2 "<p>Selamat datang.</p>")
+	(qz-insert 0 2 "<h3>Selamat datang.</h3>")
 	(qz-view-close)))
 
 (defun qz-create-login-view-index ()
