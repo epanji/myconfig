@@ -1,7 +1,7 @@
 ;; Copyright (C) 2016  Panji Kusuma
 
 ;; Author: Panji Kusuma <epanji@gmail.com>
-;; Version: 0.1.4
+;; Version: 0.1.5
 ;; Created: 28 September 2016
 ;; Keywords: codeigniter ci qzuma
 
@@ -169,7 +169,9 @@
 		((string-equal sub "data")
 		 (insert (format "<h3>Daftar Data %s</h3>\n\n" (qz-label name))))
 		((string-equal sub "detail")
-		 (insert (format "<h3>Detail Data %s</h3>\n\n" (qz-label name))))))
+		 (insert (format "<h3>Detail Data %s</h3>\n\n" (qz-label name))))
+		((string-equal sub "password")
+		 (insert "<h3>Form Password</h3>\n\n"))))
 
 (defun qz-view-table (list-field controller)
   "Generate table from fields."
@@ -551,6 +553,43 @@
 			"\n\tclass=\"btn btn-default\">"
 			(format "Kembali ke data %s</a>\n\n" table))))
 
+(defun qz-n-tab (ntab)
+  "Multiply string tab by number."
+  (if (and (numberp ntab) (> ntab 0))
+	  (make-string ntab ?\t) ""))
+
+(defun qz-n-eol (neol)
+  "Multiply string end of line by number."
+  (if (and (numberp neol) (> neol 0))
+	  (make-string neol ?\n) ""))
+
+(defun qz-insert (ntab neol &rest body)
+  "Simplify insert line with number tab and eol."
+  (let ((stab (qz-n-tab ntab))
+		(seol (qz-n-eol neol)))
+	(insert stab)
+	(mapc 'insert body)
+	(insert seol)))
+
+(defun qz-login-actor-credential (list-field)
+  "Get list actor and credential from list-field."
+  (let ((fields list-field)
+		(actor nil)
+		(credential nil))
+	(while fields
+	  (if (or (string-match "_username$" (car fields))
+			  (string-match "_email$" (car fields))
+			  (string-match "_nip$" (car fields))
+			  (string-match "_nim$" (car fields)))
+		  (setq actor (car fields)))
+	  (if (or (string-match "_password$" (car fields))
+			  (string-match "_passwd$" (car fields)))
+		  (setq credential (car fields)))
+	  (setq fields (cdr fields)))
+	(if (and actor credential)
+		(list actor credential)
+	  nil)))
+
 ;;
 ;; function construct
 ;;
@@ -769,6 +808,168 @@
 			"\t}\n\n")))
 
 ;;
+;; function login index
+;;
+(defun qz-login-function-index (list-field controller)
+  "Create function index in login controller."
+  (let ((actor-credential (qz-login-actor-credential list-field)))
+	(qz-insert 1 1 "public function index() {")
+	(qz-insert 2 2 "$data = array();")
+	(qz-insert 2 1 "$this->form_validation->set_error_delimiters"
+			   "('<span class=\"help-block error\">', "
+			   "'</span>');")
+	(if actor-credential
+		(mapc 'qz-login-rule-validation actor-credential))
+	(qz-insert 0 1 "")
+	(qz-login-condition-click list-field controller)
+	(qz-insert 2 1 (format "$this->load->view('%s_index');" controller))
+	(qz-insert 1 2 "}")))
+
+(defun qz-login-rule-validation (field)
+  "Change field to ci rule validation for login."
+  (qz-insert 2 1 "$this->form_validation->set_rules"
+			 (format "('f_%s', '%s', 'required');"
+					 field (qz-label
+							(replace-regexp-in-string
+							 "^[a-z]+_" "" field)))))
+
+(defun qz-login-condition-click (list-field controller)
+  "Condition where login button clicked from form."
+  (qz-insert 2 1 "if ($this->input->post('b_login')) {")
+  (qz-insert 3 1 "if ($this->form_validation->run() !== FALSE) {")
+  (qz-insert 4 2 (format "$url = base_url().'%s/index';" controller))
+  (let ((table (qz-name-table-from-id (car list-field)))
+		(actor-credential (qz-login-actor-credential list-field)))
+	(if actor-credential
+		(progn
+		  (qz-login-form-input actor-credential)
+		  (qz-login-check-database controller table actor-credential))))
+  (qz-insert 4 1 "redirect($url);")
+  (qz-insert 3 1 "}")
+  (qz-insert 2 2 "}"))
+
+(defun qz-login-form-input (actor-credential)
+  "Html input form login"
+  (qz-insert
+   4 1 (format "$%s = $this->input->post('f_%s');"
+			   (elt actor-credential 0)
+			   (elt actor-credential 0)))
+  (qz-insert
+   4 2 (format "$%s = md5($this->input->post('f_%s'));"
+			   (elt actor-credential 1)
+			   (elt actor-credential 1))))
+
+(defun qz-login-check-database (controller table actor-credential)
+  "Check user input credential with database."
+  (qz-insert
+   4 1
+   (format "$this->db->where('%s_status', '1');" table))
+  (qz-insert
+   4 1 (format "$this->db->where('%s', $%s);"
+			   (elt actor-credential 0)
+			   (elt actor-credential 0)))
+  (qz-insert
+   4 1 (format "$this->db->where('%s', $%s);"
+			   (elt actor-credential 1)
+			   (elt actor-credential 1)))
+  (qz-insert
+   4 1 (format "$q_%s = $this->db->get('%s');"
+			   table table))
+  (qz-insert 4 1 (format "if ($q_%s->num_rows() == 1) {" table))
+  (qz-insert 5 2 (format "$row = $q_%s->row();" table))
+  (qz-insert 5 1 (format "unset($row->%s);" (elt actor-credential 1)))
+  (qz-insert 5 2 (format "unset($row->%s_status);" table))
+  (qz-insert 5 1 (format "$data['%s'] = $row;" table))
+  (qz-insert 5 2 "$this->session->set_userdata($data);")
+  (qz-insert 5 1 (format "$url = base_url().'%s/home';" controller))
+  (qz-insert 4 1 "} else {")
+  (qz-insert 5 1 "$this->session->set_flashdata('pesan', "
+			 (format "'%s atau %s salah.');"
+					 (capitalize
+					  (replace-regexp-in-string
+					   (format "%s_" table)
+					   "" (elt actor-credential 0)))
+					 (replace-regexp-in-string
+					  (format "%s_" table)
+					  "" (elt actor-credential 1))))
+  (qz-insert 4 1 "}"))
+
+;;
+;; function login home
+;;
+(defun qz-login-function-home (controller)
+  "Create function home in login controller."
+  (qz-insert 1 1 "public function home() {")
+  (qz-insert 2 1 (format "$this->load->view('%s_home');" controller))
+  (qz-insert 1 2 "}"))
+
+;;
+;; function login password
+;;
+(defun qz-login-function-password (list-field controller)
+  "Create function password in login controller."
+  (let ((actor-credential (qz-login-actor-credential list-field))
+		(table (qz-name-table-from-id (car list-field)))
+		repassword)
+	(qz-insert 1 1 "public function password() {")
+	(qz-insert 2 1 (format "$s_%s = " table)
+			   "$this->session->userdata"
+			   (format "('%s');" table))
+	(qz-insert 2 2 (format "$id_%s = " table)
+			   (format "$s_%s->id_%s;" table table))
+	(qz-insert 2 1 "$this->form_validation->set_error_delimiters"
+			   "('<span class=\"help-block error\">', "
+			   "'</span>');")
+	(if actor-credential
+		(progn
+		  (qz-login-rule-validation (elt actor-credential 1))
+		  (setq repassword
+				(replace-regexp-in-string
+				 "\\(_\\).*\\'"
+				 "_re_"
+				 (elt actor-credential 1) nil nil 1))
+		  (qz-insert 2 1 "$this->form_validation->set_rules"
+					 (format "('f_%s', 'Re %s', "
+							 repassword
+							 (qz-label
+							  (replace-regexp-in-string
+							   "^[a-z]+_re_" "" repassword)))
+					 (format "'required|matches[f_%s]');"
+							 (elt actor-credential 1)))
+		  (qz-password-condition-click table actor-credential controller)))
+	(qz-insert 2 1 (format "$this->load->view('%s_password');" controller))
+	(qz-insert 1 2 "}")))
+
+(defun qz-password-condition-click (table actor-credential controller)
+  "Condition where password button clicked from form."
+  (qz-insert 2 1 "if ($this->input->post('b_password')) {")
+  (qz-insert 3 1 "if ($this->form_validation->run() !== FALSE) {")
+  (qz-insert 4 2 (format "$newd['%s'] = md5($this->input->post('f_%s'));"
+						 (elt actor-credential 1)
+						 (elt actor-credential 1)))
+  (qz-insert 4 1 (format "$this->db->where('id_%s', $id_%s);" table table))
+  (qz-insert 4 2 (format "$this->db->update('%s', $newd);" table))
+  (qz-insert 4 1 "$this->session->set_flashdata('pesan', "
+			 "'Password berhasil di-perbarui');")
+  (qz-insert 4 1 (format "$url = base_url().'%s/password';" controller))
+  (qz-insert 4 1 "redirect($url);")
+  (qz-insert 3 1 "}")
+  (qz-insert 2 2 "}"))
+
+;;
+;; function login logout
+;;
+(defun qz-login-function-logout (list-field)
+  "Create function logout in login controller."
+  (let ((table (qz-name-table-from-id (car list-field))))
+	(qz-insert 1 1 "public function logout() {")
+	(qz-insert 2 1 "$this->session->unset_userdata"
+			   (format "('%s');" table))
+	(qz-insert 2 1 "$url = base_url();")
+	(qz-insert 2 1 "redirect($url);")
+	(qz-insert 1 1 "}")))
+
+;;
 ;; commands from here
 ;;
 (defun qz-create-controller ()
@@ -892,6 +1093,231 @@ Next, place cursor inside and command qz-create-model-function."
 				   (qz-view-open (car list-field) "detail")
 				   (qz-view-table-detail list-field controller)
 				   (qz-view-close))
+		  (print "Selected region not well formatted")))
+	(print "No region selected")))
+
+(defun qz-create-login-controller ()
+  "Create login controller from table fields in region."
+  (interactive)
+  (if (use-region-p)
+	  (let ((list-field
+			 (qz-list-from-region (region-beginning) (region-end)))
+			(controller (downcase
+						 (read-from-minibuffer "Controller name: "))))
+		(if (and (qz-table-p list-field)
+				 (qz-login-actor-credential list-field))
+			(progn (qz-open-clear-buffer (qz-name-controller controller))
+				   (qz-class-open controller)
+				   (qz-function-construct)
+				   (qz-login-function-index list-field controller)
+				   (qz-login-function-home controller)
+				   (qz-login-function-password list-field controller)
+				   (qz-login-function-logout list-field)
+				   (insert "}"))
+		  (print "Selected region not well formatted")))
+	(print "No region selected")))
+
+(defun qz-create-login-view-home ()
+  "Create login view home from controller."
+  (interactive)
+  (let ((controller (downcase
+					 (read-from-minibuffer "Controller name: "))))
+    (qz-open-clear-buffer (qz-name-view controller "home"))
+	(qz-view-open "" "")
+	(qz-insert 0 2 "<p>Selamat datang.</p>")
+	(qz-view-close)))
+
+(defun qz-create-login-view-index ()
+  "Create login view index from controller."
+  (interactive)
+  (if (use-region-p)
+	  (let ((list-field
+			 (qz-list-from-region (region-beginning) (region-end)))
+			(controller (downcase
+						 (read-from-minibuffer "Controller name: "))))
+		(if (and (qz-table-p list-field)
+				 (qz-login-actor-credential list-field))
+			(let ((actor-credential (qz-login-actor-credential list-field))
+				  (table (qz-name-table-from-id (car list-field))))
+			  (qz-open-clear-buffer (qz-name-view controller "index"))
+			  (qz-insert 0 1 "<!DOCTYPE html>")
+			  (qz-insert 0 1 "<html lang=\"en\">")
+			  (qz-insert 1 1 "<head>")
+			  (qz-insert 2 1 "<meta charset=\"utf-8\">")
+			  (qz-insert 2 1 "<meta http-equiv=\"X-UA-Compatible\" "
+						 "content=\"IE=edge\">")
+			  (qz-insert 2 1 "<meta name=\"viewport\" content="
+						 "\"width=device-width, initial-scale=1\">")
+			  (qz-insert 2 1 "<link rel=\"icon\" href=\"<?php echo "
+						 "base_url();?>assets/favicon.ico\">")
+			  (qz-insert 2 1 "<title>Halaman Login</title>")
+			  (qz-insert 2 1 "<link href=\"<?php echo base_url();?>"
+						 "assets/bootstrap/css/bootstrap.min.css\" rel="
+						 "\"stylesheet\">")
+			  (qz-insert 2 1 "<style>")
+			  (qz-insert 3 1 "body, html { height: 100%; background-"
+						 "repeat: no-repeat; background-image: linear"
+						 "-gradient(rgb(104, 145, 162), "
+						 "rgb(12, 97, 33)); }")
+			  (qz-insert 3 1 ".card-container.card { max-width: 350px; "
+						 "padding: 40px 40px; }")
+			  (qz-insert 3 1 ".btn { font-weight: 700; height: 36px; "
+						 "-moz-user-select: none; -webkit-user-select: "
+						 "none; user-select: none; cursor: default; }")
+			  (qz-insert 3 1 ".card { background-color: #F7F7F7; padding:"
+						 " 20px 25px 30px; margin: 0 auto 25px; margin-"
+						 "top: 50px; -moz-border-radius: 2px; -webkit-"
+						 "border-radius: 2px; border-radius: 2px; -moz-"
+						 "box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3); "
+						 "-webkit-box-shadow: 0px 2px 2px rgba(0, 0, 0, "
+						 "0.3); box-shadow: 0px 2px 2px "
+						 "rgba(0, 0, 0, 0.3); }")
+			  (qz-insert 3 1 ".profile-img-card { width: 200px; height: "
+						 "200px; margin: 0 auto 20px; display: block; "
+						 "-moz-border-radius: 50%; -webkit-border-"
+						 "radius: 50%; }")
+			  (qz-insert 3 1 ".form-signin input[type=password], .form-"
+						 "signin input[type=text], .form-signin button "
+						 "{ width: 100%; display: block; margin-bottom: "
+						 "10px; font-size: 16px; height: 44px; z-index: "
+						 "1; position: relative; -moz-box-sizing: "
+						 "border-box; -webkit-box-sizing: border-box; "
+						 "box-sizing: border-box; }")
+			  (qz-insert 3 1 ".form-signin .form-control:focus { border-"
+						 "color: rgb(104, 145, 162); outline: 0; -webkit"
+						 "-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),"
+						 "0 0 8px rgb(104, 145, 162); box-shadow: "
+						 "inset 0 1px 1px rgba(0,0,0,.075),0 0 8px "
+						 "rgb(104, 145, 162); }")
+			  (qz-insert 3 1 ".btn.btn-signin { background-color: "
+						 "rgb(104, 145, 162); padding: 0px; font-weight: "
+						 "700; font-size: 14px; height: 38px; -moz-border"
+						 "-radius: 3px; -webkit-border-radius: 3px; "
+						 "border-radius: 3px; border: none; "
+						 "-o-transition: all 0.218s; -moz-transition: "
+						 "all 0.218s; -webkit-transition: "
+						 "all 0.218s; transition: all 0.218s; }")
+			  (qz-insert 3 1 ".btn.btn-signin:hover, .btn.btn-signin:"
+						 "active, .btn.btn-signin:focus { "
+						 "background-color: rgb(12, 97, 33); }")
+			  (qz-insert 2 1 "</style>")
+			  (qz-insert 1 1 "</head>")
+			  (qz-insert 1 1 "<body>")
+			  (qz-insert 2 1 "<div class=\"container\">")
+			  (qz-insert 3 1 "<div class=\"card card-container\">")
+			  (qz-insert 4 1 "<img class=\"profile-img-card\" "
+						 "src=\"<?php echo base_url();?>assets/"
+						 "image/logo.png\" />")
+			  (qz-insert 4 1 "<form name=\"f_login\" method=\"post\" "
+						 "action=\"\" class=\"form-signin\">")
+			  (qz-insert 4 1 "<input type=\"text\" name="
+						 (format "\"f_%s\" " (elt actor-credential 0))
+						 "class=\"form-control\" placeholder="
+						 (format "\"%s\" autofocus>"
+								 (capitalize
+								  (replace-regexp-in-string
+								   (format "%s_" table)
+								   "" (elt actor-credential 0)))))
+			  (qz-insert 4 1 "<?php echo form_error"
+						 (format "('f_%s');?>" (elt actor-credential 0)))
+			  (qz-insert 4 1 "<input type=\"password\" name="
+						 (format "\"f_%s\" " (elt actor-credential 1))
+						 "class=\"form-control\" placeholder="
+						 (format "\"%s\">"
+								 (capitalize
+								  (replace-regexp-in-string
+								   (format "%s_" table)
+								   "" (elt actor-credential 1)))))
+			  (qz-insert 4 1 "<?php echo form_error"
+						 (format "('f_%s');?>" (elt actor-credential 1)))
+			  (qz-insert 4 1 "<button name=\"b_login\" "
+						 "class=\"btn btn-lg btn-primary btn-block "
+						 "btn-signin\" type=\"submit\" value="
+						 "\"Login\">Login</button>")
+			  (qz-insert 4 1 "<?php if ($pesan = @$this->session->"
+						 "flashdata('pesan')) { ?>")
+			  (qz-insert 5 1 "<span class=\"help-block error\"><?php "
+						 "echo $pesan;?></span>")
+			  (qz-insert 4 1 "<?php } ?>")
+			  (qz-insert 3 1 "</form>")
+			  (qz-insert 2 1 "</div>")
+			  (qz-insert 1 1 "</div>")
+			  (qz-insert 1 1 "</body>")
+			  (qz-insert 0 1 "</html>"))
+		  (print "Selected region not well formatted")))
+	(print "No region selected")))
+
+(defun qz-create-login-view-password ()
+  "Create login view password from controller."
+  (interactive)
+  (if (use-region-p)
+	  (let ((list-field
+			 (qz-list-from-region (region-beginning) (region-end)))
+			(controller (downcase
+						 (read-from-minibuffer "Controller name: "))))
+		(if (and (qz-table-p list-field)
+				 (qz-login-actor-credential list-field))
+			(let ((actor-credential (qz-login-actor-credential list-field))
+				  (table (qz-name-table-from-id (car list-field)))
+				  repassword)
+			  (qz-open-clear-buffer (qz-name-view controller "password"))
+			  (qz-view-open (car list-field) "password")
+			  (qz-insert 0 2 "<form class=\"form-horizontal\" "
+						 "name=\"form_password\" "
+						 "method=\"post\" action=\"\">")
+			  (qz-insert 1 1 "<div class=\"form-group\">")
+			  (qz-insert 2 1 "<label class=\"control-label col-sm-2\">"
+						 (format "%s</label>"
+								 (qz-label
+								  (progn
+									(string-match
+									 "_"
+									 (elt actor-credential 1))
+									(substring
+									 (elt actor-credential 1)
+									 (match-end 0))))))
+			  (qz-insert 2 1 "<div class=\"col-sm-10\">")
+			  (qz-insert 3 1 "<input class=\"form-control\" "
+						 "type=\"password\" ")
+			  (qz-insert 4 1 (format "name=\"f_%s\" value=\"\"/>"
+									 (elt actor-credential 1)))
+			  (qz-insert 3 1 (format "<?php echo form_error('f_%s');?>"
+									 (elt actor-credential 1)))
+			  (qz-insert 2 1 "</div>")
+			  (qz-insert 1 2 "</div>")
+			  (setq repassword
+					(replace-regexp-in-string
+					 "\\(_\\).*\\'"
+					 "_re_"
+					 (elt actor-credential 1) nil nil 1))
+			  (qz-insert 1 1 "<div class=\"form-group\">")
+			  (qz-insert 2 1 "<label class=\"control-label col-sm-2\">"
+						 (format
+						  "%s</label>"
+						  (qz-label
+						   (progn
+							 (string-match "_" repassword)
+							 (substring repassword (match-end 0))))))
+			  (qz-insert 2 1 "<div class=\"col-sm-10\">")
+			  (qz-insert 3 1 "<input class=\"form-control\" "
+						 "type=\"password\" ")
+			  (qz-insert 4 1 (format "name=\"f_%s\" value=\"\"/>"
+									 repassword))
+			  (qz-insert 3 1 (format "<?php echo form_error('f_%s');?>"
+									 repassword))
+			  (qz-insert 2 1 "</div>")
+			  (qz-insert 1 2 "</div>")
+			  (qz-insert 1 1 "<div class=\"form-group\">")
+			  (qz-insert 2 1 "<label class=\"control-label "
+						 "col-sm-2\">&nbsp;</label>")
+			  (qz-insert 2 1 "<div class=\"col-sm-10\">")
+			  (qz-insert 3 1 "<input class=\"btn btn-primary\" type=\""
+						 "submit\" name=\"b_password\" ")
+			  (qz-insert 4 1 "value=\"Simpan\"/>")
+			  (qz-insert 2 1 "</div>")
+			  (qz-insert 1 2 "</div>")
+			  (qz-insert 0 2 "</form>")
+			  (qz-view-close))
 		  (print "Selected region not well formatted")))
 	(print "No region selected")))
 
