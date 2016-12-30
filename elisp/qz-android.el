@@ -1,7 +1,7 @@
 ;; Copyright (C) 2016  Panji Kusuma
 
 ;; Author: Panji Kusuma <epanji@gmail.com>
-;; Version: 0.0.1
+;; Version: 0.0.2
 ;; Created: 08 December 2016
 ;; Keywords: android qzuma
 
@@ -448,7 +448,8 @@
   (qz-insert 0 1 "")
   (qz-getters-setters list-field 1)
   (qz-model-to-string list-field)
-  (qz-insert 0 0 "}"))
+  (qz-insert 0 0 "}")
+  (when (fboundp 'java-mode) (java-mode)))
 
 (defun qz-create-android-model-adapter
 	(package class list-field)
@@ -459,7 +460,8 @@
   (qz-insert 0 1 "")
   (qz-insert 2 1 "return view;")
   (qz-insert 1 1 "}")
-  (qz-insert 0 0 "}"))
+  (qz-insert 0 0 "}")
+  (when (fboundp 'java-mode) (java-mode)))
 
 (defun qz-create-android-model-helper
 	(package class list-field with-status-p)
@@ -475,7 +477,8 @@
   (qz-insert 2 1 (format "return l%s;"
 						 (substring class 0 1)))
   (qz-insert 1 1 "}")
-  (qz-insert 0 0 "}"))
+  (qz-insert 0 0 "}")
+  (when (fboundp 'java-mode) (java-mode)))
 
 ;;; commands
 (defun qz-create-android-model-adapter-helper ()
