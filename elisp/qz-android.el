@@ -253,7 +253,7 @@
 						  "+ '\"' + ':' + '\"' + "
 						  (format "%s + " cf)
 						  (if (equal ct (car (last tags)))
-							  "'}';"
+							  "'\"' + '}';"
 							"'\"' + ','")))
 			 tags class-fields)
 	(qz-insert 1 1 "}")))
