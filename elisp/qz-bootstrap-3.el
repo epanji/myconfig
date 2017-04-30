@@ -362,38 +362,6 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
  "qz-twbs" "glyphicon" "home" qz-twbs-glyphicons
  "<span class=\"%s\" aria-hidden=\"true\"></span> ")
 
-;; (defvar qz-twbs-default-glyphicon "home")
-
-;; (defun qz-twbs-read-glyphicon ()
-;;   "Read from minibuffer with completion."
-;;   (completing-read
-;;    (format "Glyphicon Name (%s): "
-;;            qz-twbs-default-glyphicon)
-;;    qz-twbs-glyphicons
-;;    nil
-;;    t))
-
-;; (defun qz-twbs-insert-glyphicon (name &optional html)
-;;   "Insert twitter bootstrap glyphicon class at where point is.
-;; If non-nil prefix HTML, insert glyphicon class wrapped in html tag."
-;;   (interactive
-;;    (list (qz-twbs-read-glyphicon)
-;;          current-prefix-arg))
-;;   (setq qz-twbs-default-glyphicon name)
-;;   (if html
-;;       (qz-twbs--insert-glyphicon name 1)
-;;     (qz-twbs--insert-glyphicon name)))
-
-;; (defun qz-twbs--insert-glyphicon (name &optional html)
-;;   "Non-interactive insert twitter bootstrap glyphicon class at where
-;; point is. If non-nil prefix HTML, insert glyphicon class wrapped in
-;; html tag."
-;;   (let ((template "%s")
-;;         (glyphicon (cdr (assoc name qz-twbs-glyphicons))))
-;;     (when html
-;;       (setq template "<span class=\"%s\" aria-hidden=\"true\"></span> "))
-;;     (insert (format template glyphicon))))
-
 (defun qz-twbs-sr-only (&optional html)
   "Insert twitter bootstrap class sr-only.
 If non-nil prefix HTML, insert sr-only wrapped in html tag with value
