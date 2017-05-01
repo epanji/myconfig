@@ -494,7 +494,7 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
     ("zoom-out" . "glyphicon-zoom-out")))
 
 (qz-define-read-prompt
- "qz-twbs" "glyphicon" "home" qz-twbs-glyphicons
+ "qz-twbs" "glyphicon" "class" qz-twbs-glyphicons
  "<span class=\"glyphicon %s\"aria-hidden=\"true\"></span> ")
 
 ;;; dropdowns
