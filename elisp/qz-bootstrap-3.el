@@ -782,4 +782,29 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
  "qz-twbs" "nav" "class" qz-twbs-navs
  "class=\"%s\"")
 
+;;; navbars
+
+(defvar qz-twbs-navbars
+  '(("brand" . "navbar-brand")
+    ("btn" . "navbar-btn")
+    ("class" . "navbar")
+    ("collapse" . "navbar-collapse")
+    ("default" . "navbar-default")
+    ("fixed-bottom" . "navbar-fixed-bottom")
+    ("fixed-top" . "navbar-fixed-top")
+    ("form" . "navbar-form")
+    ("header" . "navbar-header")
+    ("inverse" . "navbar-inverse")
+    ("left" . "navbar-left")
+    ("link" . "navbar-link")
+    ("nav" . "navbar-nav")
+    ("right" . "navbar-right")
+    ("static-top" . "navbar-static-top")
+    ("text" . "navbar-text")
+    ("toggle" . "navbar-toggle")))
+
+(qz-define-read-prompt
+ "qz-twbs" "navbar" "class" qz-twbs-navbars
+ "class=\"%s\"")
+
 ;;; qz-bootstrap-3.el ends here
