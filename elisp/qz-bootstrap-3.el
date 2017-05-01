@@ -226,7 +226,8 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
     ("only-focusable" . "sr-only-focusable")))
 
 (qz-define-read-prompt
- "qz-twbs" "sr" "only" qz-twbs-srs)
+ "qz-twbs" "sr" "only" qz-twbs-srs
+ "class=\"%s\"")
 
 ;;; glyphicons
 
@@ -510,7 +511,7 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
 
 (qz-define-read-prompt
  "qz-twbs" "dropdown" "class" qz-twbs-dropdowns
- "class=\"%s\"")
+ "class=\"dropdown %s\"")
 
 ;;; btns
 
@@ -553,7 +554,7 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
 
 (qz-define-read-prompt
  "qz-twbs" "input" "class" qz-twbs-inputs
- "class=\"btn %s\"")
+ "class=\"input %s\"")
 
 ;;; cols
 
@@ -780,7 +781,7 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
 
 (qz-define-read-prompt
  "qz-twbs" "nav" "class" qz-twbs-navs
- "class=\"%s\"")
+ "class=\"nav %s\"")
 
 ;;; navbars
 
@@ -805,6 +806,17 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
 
 (qz-define-read-prompt
  "qz-twbs" "navbar" "class" qz-twbs-navbars
- "class=\"%s\"")
+ "class=\"navbar %s\"")
+
+;;; paginations
+
+(defvar qz-twbs-paginations
+  '(("class" . "pagination")
+    ("lg" . "pagination-lg")
+    ("sm" . "pagination-sm")))
+
+(qz-define-read-prompt
+ "qz-twbs" "pagination" "class" qz-twbs-paginations
+ "class=\"pagination %s\"")
 
 ;;; qz-bootstrap-3.el ends here
