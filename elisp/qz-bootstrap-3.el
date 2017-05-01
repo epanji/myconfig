@@ -539,4 +539,20 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
  "qz-twbs" "btn" "class" qz-twbs-btns
  "class=\"btn %s\"")
 
+;;; inputs
+
+(defvar qz-twbs-inputs
+  '(("class" . "input")
+    ("group" . "input-group")
+    ("group-addon" . "input-group-addon")
+    ("group-btn" . "input-group-btn")
+    ("group-lg" . "input-group-lg")
+    ("group-sm" . "input-group-sm")
+    ("lg" . "input-lg")
+    ("sm" . "input-sm")))
+
+(qz-define-read-prompt
+ "qz-twbs" "input" "class" qz-twbs-inputs
+ "class=\"btn %s\"")
+
 ;;; qz-bootstrap-3.el ends here
