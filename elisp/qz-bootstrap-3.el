@@ -767,4 +767,19 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
  "qz-twbs" "col" "sm-12" qz-twbs-cols
  "class=\"%s\"")
 
+;;; navs
+
+(defvar qz-twbs-navs
+  '(("class" . "nav")
+    ("divider" . "nav-divider")
+    ("justified" . "nav-justified")
+    ("pills" . "nav-pills")
+    ("stacked" . "nav-stacked")
+    ("tabs" . "nav-tabs")
+    ("tabs-justified" . "nav-tabs-justified")))
+
+(qz-define-read-prompt
+ "qz-twbs" "nav" "class" qz-twbs-navs
+ "class=\"%s\"")
+
 ;;; qz-bootstrap-3.el ends here
