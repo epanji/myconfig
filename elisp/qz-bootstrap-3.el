@@ -850,4 +850,20 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
  "qz-twbs" "alert" "class" qz-twbs-alerts
  "class=\"alert %s\"")
 
+;;; progresses
+
+(defvar qz-twbs-progresses
+  '(("bar" . "progress-bar")
+    ("bar-danger" . "progress-bar-danger")
+    ("bar-info" . "progress-bar-info")
+    ("bar-striped" . "progress-bar-striped")
+    ("bar-success" . "progress-bar-success")
+    ("bar-warning" . "progress-bar-warning")
+    ("class" . "progress")
+    ("striped" . "progress-striped")))
+
+(qz-define-read-prompt
+ "qz-twbs" "progress" "class" qz-twbs-progresses
+ "class=\"%s\"")
+
 ;;; qz-bootstrap-3.el ends here
