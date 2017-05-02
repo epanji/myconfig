@@ -883,4 +883,22 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
  "qz-twbs" "media" "class" qz-twbs-medias
  "class=\"%s\"")
 
+;;; lists
+
+(defvar qz-twbs-lists
+  '(("group" . "list-group")
+    ("group-item" . "list-group-item")
+    ("group-item-danger" . "list-group-item-danger")
+    ("group-item-heading" . "list-group-item-heading")
+    ("group-item-info" . "list-group-item-info")
+    ("group-item-success" . "list-group-item-success")
+    ("group-item-text" . "list-group-item-text")
+    ("group-item-warning" . "list-group-item-warning")
+    ("inline" . "list-inline")
+    ("unstyled" . "list-unstyled")))
+
+(qz-define-read-prompt
+ "qz-twbs" "list" "group" qz-twbs-lists
+ "class=\"%s\"")
+
 ;;; qz-bootstrap-3.el ends here
