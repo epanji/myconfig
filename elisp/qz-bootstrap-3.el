@@ -901,4 +901,25 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
  "qz-twbs" "list" "group" qz-twbs-lists
  "class=\"%s\"")
 
+;;; panels
+
+(defvar qz-twbs-panels
+  '(("body" . "panel-body")
+    ("class" . "panel")
+    ("heading" . "panel-heading")
+    ("title" . "panel-title")
+    ("footer" . "panel-footer")
+    ("collapse" . "panel-collapse")
+    ("group" . "panel-group")
+    ("default" . "panel-default")
+    ("primary" . "panel-primary")
+    ("success" . "panel-success")
+    ("info" . "panel-info")
+    ("warning" . "panel-warning")
+    ("danger" . "panel-danger")))
+
+(qz-define-read-prompt
+ "qz-twbs" "panel" "class" qz-twbs-panels
+ "class=\"panel %s\"")
+
 ;;; qz-bootstrap-3.el ends here
