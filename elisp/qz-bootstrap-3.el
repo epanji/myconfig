@@ -834,4 +834,20 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
  "qz-twbs" "label" "class" qz-twbs-labels
  "class=\"label %s\"")
 
+;;; alerts
+
+(defvar qz-twbs-alerts
+  '(("class" . "alert")
+    ("danger" . "alert-danger")
+    ("dismissable" . "alert-dismissable")
+    ("dismissible" . "alert-dismissible")
+    ("info" . "alert-info")
+    ("link" . "alert-link")
+    ("success" . "alert-success")
+    ("warning" . "alert-warning")))
+
+(qz-define-read-prompt
+ "qz-twbs" "alert" "class" qz-twbs-alerts
+ "class=\"alert %s\"")
+
 ;;; qz-bootstrap-3.el ends here
