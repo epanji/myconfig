@@ -819,4 +819,19 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
  "qz-twbs" "pagination" "class" qz-twbs-paginations
  "class=\"pagination %s\"")
 
+;;; labels
+
+(defvar qz-twbs-labels
+  '(("class" . "label")
+    ("label-danger" . "label-danger")
+    ("label-default" . "label-default")
+    ("label-info" . "label-info")
+    ("label-primary" . "label-primary")
+    ("label-success" . "label-success")
+    ("label-warning" . "label-warning")))
+
+(qz-define-read-prompt
+ "qz-twbs" "label" "class" qz-twbs-labels
+ "class=\"label %s\"")
+
 ;;; qz-bootstrap-3.el ends here
