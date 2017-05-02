@@ -922,4 +922,18 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
  "qz-twbs" "panel" "class" qz-twbs-panels
  "class=\"panel %s\"")
 
+;;; tables
+
+(defvar qz-twbs-tables
+  '(("bordered" . "table-bordered")
+    ("class" . "table")
+    ("condensed" . "table-condensed")
+    ("hover" . "table-hover")
+    ("responsive" . "table-responsive")
+    ("striped" . "table-striped")))
+
+(qz-define-read-prompt
+ "qz-twbs" "table" "class" qz-twbs-tables
+ "class=\"table %s\"")
+
 ;;; qz-bootstrap-3.el ends here
