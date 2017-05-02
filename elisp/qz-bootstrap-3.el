@@ -823,12 +823,12 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
 
 (defvar qz-twbs-labels
   '(("class" . "label")
-    ("label-danger" . "label-danger")
-    ("label-default" . "label-default")
-    ("label-info" . "label-info")
-    ("label-primary" . "label-primary")
-    ("label-success" . "label-success")
-    ("label-warning" . "label-warning")))
+    ("danger" . "label-danger")
+    ("default" . "label-default")
+    ("info" . "label-info")
+    ("primary" . "label-primary")
+    ("success" . "label-success")
+    ("warning" . "label-warning")))
 
 (qz-define-read-prompt
  "qz-twbs" "label" "class" qz-twbs-labels
@@ -906,17 +906,17 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
 (defvar qz-twbs-panels
   '(("body" . "panel-body")
     ("class" . "panel")
-    ("heading" . "panel-heading")
-    ("title" . "panel-title")
-    ("footer" . "panel-footer")
     ("collapse" . "panel-collapse")
-    ("group" . "panel-group")
+    ("danger" . "panel-danger")
     ("default" . "panel-default")
+    ("footer" . "panel-footer")
+    ("group" . "panel-group")
+    ("heading" . "panel-heading")
+    ("info" . "panel-info")
     ("primary" . "panel-primary")
     ("success" . "panel-success")
-    ("info" . "panel-info")
-    ("warning" . "panel-warning")
-    ("danger" . "panel-danger")))
+    ("title" . "panel-title")
+    ("warning" . "panel-warning")))
 
 (qz-define-read-prompt
  "qz-twbs" "panel" "class" qz-twbs-panels
