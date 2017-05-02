@@ -866,4 +866,21 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
  "qz-twbs" "progress" "class" qz-twbs-progresses
  "class=\"%s\"")
 
+;;; medias
+
+(defvar qz-twbs-medias
+  '(("body" . "media-body")
+    ("bottom" . "media-bottom")
+    ("class" . "media")
+    ("heading" . "media-heading")
+    ("left" . "media-left")
+    ("list" . "media-list")
+    ("middle" . "media-middle")
+    ("object" . "media-object")
+    ("right" . "media-right")))
+
+(qz-define-read-prompt
+ "qz-twbs" "media" "class" qz-twbs-medias
+ "class=\"%s\"")
+
 ;;; qz-bootstrap-3.el ends here
