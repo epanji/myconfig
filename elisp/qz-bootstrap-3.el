@@ -936,4 +936,16 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
  "qz-twbs" "table" "class" qz-twbs-tables
  "class=\"table %s\"")
 
+;;; embeds
+
+(defvar qz-twbs-embeds
+  '(("responsive" . "embed-responsive")
+    ("responsive-16by9" . "embed-responsive-16by9")
+    ("responsive-4by3" . "embed-responsive-4by3")
+    ("responsive-item" . "embed-responsive-item")))
+
+(qz-define-read-prompt
+ "qz-twbs" "embed" "responsive" qz-twbs-embeds
+ "class=\"%s\"")
+
 ;;; qz-bootstrap-3.el ends here
