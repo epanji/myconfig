@@ -989,4 +989,17 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
  "qz-twbs" "modal" "class" qz-twbs-modals
  "class=\"%s\"")
 
+;;; carousels
+
+(defvar qz-twbs-carousels
+  '(("caption" . "carousel-caption")
+    ("class" . "carousel")
+    ("control" . "carousel-control")
+    ("indicators" . "carousel-indicators")
+    ("inner" . "carousel-inner")))
+
+(qz-define-read-prompt
+ "qz-twbs" "carousel" "class" qz-twbs-carousels
+ "class=\"%s\"")
+
 ;;; qz-bootstrap-3.el ends here
