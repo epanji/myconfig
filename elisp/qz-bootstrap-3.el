@@ -969,4 +969,24 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
  "qz-twbs" "container" "class" qz-twbs-containers
  "class=\"%s\"")
 
+;;; modals
+
+(defvar qz-twbs-modals
+  '(("backdrop" . "modal-backdrop")
+    ("body" . "modal-body")
+    ("class" . "modal")
+    ("content" . "modal-content")
+    ("dialog" . "modal-dialog")
+    ("footer" . "modal-footer")
+    ("header" . "modal-header")
+    ("lg" . "modal-lg")
+    ("open" . "modal-open")
+    ("scrollbar-measure" . "modal-scrollbar-measure")
+    ("sm" . "modal-sm")
+    ("title" . "modal-title")))
+
+(qz-define-read-prompt
+ "qz-twbs" "modal" "class" qz-twbs-modals
+ "class=\"%s\"")
+
 ;;; qz-bootstrap-3.el ends here
