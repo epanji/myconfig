@@ -959,4 +959,14 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
  "qz-twbs" "well" "class" qz-twbs-wells
  "class=\"well %s\"")
 
+;;; containers
+
+(defvar qz-twbs-containers
+  '(("class" . "container")
+    ("fluid" . "container-fluid")))
+
+(qz-define-read-prompt
+ "qz-twbs" "container" "class" qz-twbs-containers
+ "class=\"%s\"")
+
 ;;; qz-bootstrap-3.el ends here
