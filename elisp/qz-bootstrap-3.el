@@ -1002,4 +1002,20 @@ HTML-TEMPLATE:  an optional string as template with single '%s' inside."
  "qz-twbs" "carousel" "class" qz-twbs-carousels
  "class=\"%s\"")
 
+;;; forms
+
+(defvar qz-twbs-forms
+  '(("control" . "form-control")
+    ("control-feedback" . "form-control-feedback")
+    ("control-static" . "form-control-static")
+    ("group" . "form-group")
+    ("group-lg" . "form-group-lg")
+    ("group-sm" . "form-group-sm")
+    ("horizontal" . "form-horizontal")
+    ("inline" . "form-inline")))
+
+(qz-define-read-prompt
+ "qz-twbs" "form" "control" qz-twbs-forms
+ "class=\"%s\"")
+
 ;;; qz-bootstrap-3.el ends here
