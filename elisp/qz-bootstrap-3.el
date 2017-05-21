@@ -117,7 +117,7 @@ BODY:       a cons as association list."
                            (format "%s-%d" (cdr item) (+ count 1)))))))
        body)
       (setq count (+ count 1)))
-    `(progn (defvar ,(intern list-name) '(,@container)))))
+    `(defvar ,(intern list-name) '(,@container))))
 
 ;;; roles
 
