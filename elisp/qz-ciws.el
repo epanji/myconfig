@@ -1,7 +1,7 @@
 ;; Copyright (C) 2017  Panji Kusuma
 
 ;; Author: Panji Kusuma <epanji@gmail.com>
-;; Version: 0.0.1
+;; Version: 0.0.2
 ;; Created: 04 June 2017
 ;; Keywords: codeigniter ci service web json qzuma
 
@@ -58,7 +58,7 @@ BODY: sequences of argument which each argument may be a string or a
     (search-backward (char-to-string char) nil t 2)
     (forward-char)
     (insert (make-string 3 ?\n))
-    (previous-line)
+    (forward-line -1)
     (delete-blank-lines)))
 
 ;;; functions
@@ -76,10 +76,11 @@ BODY: sequences of argument which each argument may be a string or a
   (and (string-match "^id_" (car fields))
        (string-match "_status$" (car (last fields)))))
 
-(defun qz-table-name (fields)
-  "Get table name from fields."
-  (replace-regexp-in-string
-   "^id_" "" (car fields)))
+(defun qz-table-name (table-or-field)
+  "Get table name from fields or id_field."
+  (let ((field (cond ((listp table-or-field) (car table-or-field))
+                     ((stringp table-or-field) table-or-field))))
+    (replace-regexp-in-string "^id_" "" field)))
 
 (defun qz-controller-for-web-service (name)
   "Create controller for web service"
@@ -104,7 +105,7 @@ BODY: sequences of argument which each argument may be a string or a
         (qz-open-continue-buffer (concat controller ".php"))
         (when (equal 1 (point-at-bol))
           (insert (qz-controller-for-web-service controller))
-          (previous-line))
+          (forward-line -1))
         (when (fboundp 'web-mode) (web-mode))
         (insert
          (qz-line 0 1 "")
@@ -112,21 +113,24 @@ BODY: sequences of argument which each argument may be a string or a
          (qz-line 2 1 "$data = array();")
          (qz-line 2 2 "$data['result'] = 'false';")
 
-         ;; content get / set or both
+         ;; content get / set or if-get
          (qz-function-contents fields 2)
 
          (qz-line 0 1 "")
          (qz-line 2 1 "header('Content-Type: application/json');")
          (qz-line 2 1 "echo json_encode($data);")
          (qz-line 1 0 "}")))
-    ;; not table
     (print "Selected region not well formatted")))
 
 (defun qz-function-contents (fields &optional ntab neol)
   "Choose content type first before execution."
+  (unless ntab
+    (setq ntab 0))
+  (unless neol
+    (setq neol 0))
   (let* ((choise '(("get" . "get")
                    ("set" . "set")
-                   ("both" . "both")))
+                   ("if-get" . "if-get")))
          (choosen (completing-read
                    "Function Mode (get): " ; prompt
                    choise                  ; collection
@@ -136,19 +140,15 @@ BODY: sequences of argument which each argument may be a string or a
                    nil                     ; hist
                    "get"                   ; def
                    )))
-    (unless ntab
-      (setq ntab 0))
-    (unless neol
-      (setq neol 0))
     (cond ((equal choosen "get")
            (qz-function-content-get fields ntab neol))
           ((equal choosen "set")
            (qz-function-content-set fields ntab neol))
-          ((equal choosen "both")
-           (qz-function-content-both fields ntab neol)))))
+          ((equal choosen "if-get")
+           (qz-function-content-if-get fields ntab neol)))))
 
 (defun qz-function-content-get (fields &optional ntab neol)
-  ""
+  "Content for request data."
   (unless ntab
     (setq ntab 0))
   (unless neol
@@ -156,22 +156,21 @@ BODY: sequences of argument which each argument may be a string or a
   (concat
    (qz-get-content (butlast fields) ntab neol)
    (qz-line 0 1 "")
-   (qz-get-query-content fields ntab neol)
-   ))
+   (qz-get-query-content fields ntab neol)))
 
 (defun qz-get-content (fields &optional ntab neol)
-  ""
+  "Select option to get."
   (unless ntab
     (setq ntab 0))
   (unless neol
     (setq neol 0))
   (let ((one (car fields))
-        (many (cdr fields))
+        (body (cdr fields))
         (container ""))
     (setq
      container
      (qz-line ntab 1 (format "$select  = \"%s, \";" one)))
-    (when (> (length many) 1)
+    (when (> (length body) 1)
       (mapc
        (lambda (field)
          (setq
@@ -179,34 +178,81 @@ BODY: sequences of argument which each argument may be a string or a
           (concat
            container
            (qz-line ntab 1 (format "$select .= \"%s, \";" field)))))
-       (butlast many))
-      )
+       (butlast body)))
     (concat
      container
-     (qz-line ntab 1 (format "$select .= \"%s \";" (car (reverse many)))))
-    ))
+     (qz-line ntab 1 (format "$select .= \"%s \";" (car (reverse body)))))))
 
-(defun qz-get-query-content (fields &optional ntab neol)
-  ""
+(defun qz-get-join-fields (fields)
+  "Filter fields for join."
+  (let ((names (rest (butlast fields))))
+    (delq
+     nil
+     (mapcar
+      (lambda (field)
+        (when (string-match "^id_" field)
+          field))
+      names))))
+
+(defun qz-get-query-where (fields)
+  "Get list fields for where options."
+  (completing-read-multiple
+   "Optional wheres with comma (nil): " ; prompt
+   (butlast fields)                     ; collection
+   nil                                  ; predicate
+   t                                    ; require-match
+   nil                                  ; initial-input
+   nil                                  ; hist
+   nil                                  ; def
+   ))
+
+(defun qz-get-query-content (fields &optional ntab neol wheres)
+  "Query to get data"
   (unless ntab
     (setq ntab 0))
   (unless neol
     (setq neol 0))
   (let ((table (qz-table-name fields))
-        (state (car (reverse fields))))
+        (state (car (reverse fields)))
+        (joins (qz-get-join-fields fields)))
     (concat
      (qz-line ntab 1 "$this->db->select($select);")
-     ;; check if join later
+     (when joins
+       (let ((container ""))
+         (mapc
+          (lambda (id)
+            (setq
+             container
+             (concat
+              container
+              (qz-line ntab 0 "$this->db->join(")
+              (qz-line 0 0 (format "'%s', " (qz-table-name id)))
+              (qz-line 0 0 (format "'%s.%s=" (qz-table-name id) id))
+              (qz-line 0 1 (format "%s.%s');" table id)))))
+          joins)
+         container))
      (qz-line ntab 1 (format "$this->db->where('%s', '1');" state))
+     (when wheres
+       (let ((container ""))
+         (mapc
+          (lambda (field)
+            (setq
+             container
+             (concat
+              container
+              (qz-line ntab 0 "$this->db->where")
+              (qz-line 0 0 (format "('%s', " field))
+              (qz-line 0 0 "$this->input->post")
+              (qz-line 0 1 (format "('f_%s'));" field)))))
+          wheres)
+         container))
      (qz-line ntab 0 (format "$q_%s = $this->" table))
      (qz-line 0 1 (format "db->get('%s');" table))
      (qz-line ntab 1 (format "if ($q_%s->num_rows() > 0) {" table))
      (qz-line (+ ntab 1) 0 "$data['data'] = ")
      (qz-line 0 1 (format "$q_%s->result();" table))
      (qz-line (+ ntab 1) 1 "$data['result'] = 'true';")
-     (qz-line ntab 1 "}")
-     )
-    ))
+     (qz-line ntab 1 "}"))))
 
 (defun qz-function-content-set (fields &optional ntab neol)
   "Content for input data."
@@ -222,15 +268,23 @@ BODY: sequences of argument which each argument may be a string or a
    (qz-line 0 1 "")
    (qz-if-post-insert-update fields (+ ntab 2) neol)
    (qz-line (+ ntab 2) 1 "$data['data'] = \"Sukses\";")
-   (qz-if-post-close ntab neol)))
+   (qz-if-post-close ntab neol t)))
 
-(defun qz-function-content-both (fields &optional ntab neol)
-  ""
+(defun qz-function-content-if-get (fields &optional ntab neol)
+  "Content with conditional term to access."
   (unless ntab
     (setq ntab 0))
   (unless neol
     (setq neol 0))
-  (print "from-both"))
+  (concat
+   (qz-fields-validation (cdr (butlast fields)) ntab neol)
+   (qz-line 0 1 "")
+   (qz-if-post-open (butlast fields) ntab neol)
+   (qz-get-content (butlast fields) (+ ntab 2) neol)
+   (qz-line 0 1 "")
+   (qz-get-query-content fields (+ ntab 2) neol
+                         (qz-get-query-where fields))
+   (qz-if-post-close ntab neol)))
 
 (defun qz-if-post-insert-update (fields &optional ntab neol)
   "Input or update database."
@@ -270,7 +324,6 @@ BODY: sequences of argument which each argument may be a string or a
                    (car choice)          ; def
                    )))
     (concat
-     ;; (qz-line ntab 0 (format "if ($%s = " choosen))
      (qz-line ntab 0 "if ($this->input->post")
      (qz-line 0 1 (format "('f_%s')) {" choosen))
      (qz-line (+ ntab 1) 0 "if ($this->form_validation")
@@ -278,7 +331,7 @@ BODY: sequences of argument which each argument may be a string or a
      (qz-line 0 neol ""))))
 
 (defun qz-if-post-content (fields &optional ntab neol)
-  ""
+  "Get data from input post."
   (unless ntab
     (setq ntab 0))
   (unless neol
@@ -292,19 +345,19 @@ BODY: sequences of argument which each argument may be a string or a
         (concat
          posts
          (qz-line ntab 0 (format "$data_%s['%s'] = " table field))
-         (qz-line 0 1 (format "$this->input->post('f_%s');" field))
-         )))
+         (qz-line 0 1 (format "$this->input->post('f_%s');" field)))))
      (cdr fields))
     (qz-line 0 neol posts)))
 
-(defun qz-if-post-close (&optional ntab neol)
+(defun qz-if-post-close (&optional ntab neol result)
   "Close condition content."
   (unless ntab
     (setq ntab 0))
   (unless neol
     (setq neol 0))
   (concat
-   (qz-line (+ ntab 2) 1 "$data['result'] = 'true';")
+   (when result
+     (qz-line (+ ntab 2) 1 "$data['result'] = 'true';"))
    (qz-line (+ ntab 1) 1 "} else {")
    (qz-line (+ ntab 2) 1 "$data['data'] = \"Gagal validasi\";")
    (qz-line (+ ntab 1) 1 "}")
@@ -335,10 +388,13 @@ BODY: sequences of argument which each argument may be a string or a
 (defun qz-create-codeigniter-web-service ()
   "Start creating file buffer for services."
   (interactive)
-  (let ((controller "Android"))
+  (let ((controller
+         (read-from-minibuffer
+          "Controller name: "
+          "Android")))
     (qz-open-clear-buffer (concat controller ".php"))
     (insert (qz-controller-for-web-service controller))
-    (previous-line)
+    (forward-line -1)
     (when (fboundp 'web-mode) (web-mode))))
 
 (defun qz-create-codeigniter-web-service-function ()
@@ -348,10 +404,13 @@ BODY: sequences of argument which each argument may be a string or a
 	  (let* ((fields (qz-list-from-region
                       (region-beginning)
                       (region-end)))
-             (name (downcase (read-from-minibuffer
-                              "Function name: "
-                              (qz-table-name fields)))))
-        (qz-function-from-fields fields name))
+             (controller (read-from-minibuffer
+                          "Controller name: "
+                          "Android"))
+             (name (read-from-minibuffer
+                    "Function name: "
+                    (qz-table-name fields))))
+        (qz-function-from-fields fields name controller))
 	(print "No region selected")))
 
 ;; qz-ciws.el ends here
