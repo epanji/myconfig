@@ -54,7 +54,6 @@ BODY: sequences of argument which each argument may be a string or a
     (setq char ?\}))
   (switch-to-buffer-other-window name)
   (unless (equal 1 (goto-char (point-max)))
-    (setq result t)
     (search-backward (char-to-string char) nil t 2)
     (forward-char)
     (insert (make-string 3 ?\n))
@@ -81,6 +80,13 @@ BODY: sequences of argument which each argument may be a string or a
   (let ((field (cond ((listp table-or-field) (car table-or-field))
                      ((stringp table-or-field) table-or-field))))
     (replace-regexp-in-string "^id_" "" field)))
+
+(defun qz-prevent-ambigu (field)
+  "Return field or table.id_field."
+  (if (string-match "^id_" field)
+      (let ((table (qz-table-name field)))
+        (format "%s.%s" table field))
+    field))
 
 (defun qz-controller-for-web-service (name)
   "Create controller for web service"
@@ -177,7 +183,8 @@ BODY: sequences of argument which each argument may be a string or a
           container
           (concat
            container
-           (qz-line ntab 1 (format "$select .= \"%s, \";" field)))))
+           (qz-line ntab 1 (format "$select .= \"%s, \";"
+                                   (qz-prevent-ambigu field))))))
        (butlast body)))
     (concat
      container
@@ -194,10 +201,10 @@ BODY: sequences of argument which each argument may be a string or a
           field))
       names))))
 
-(defun qz-get-query-where (fields)
-  "Get list fields for where options."
+(defun qz-get-filtered-fields (fields)
+  "Get fields after filtered."
   (completing-read-multiple
-   "Optional wheres with comma (nil): " ; prompt
+   "Optional fields with comma (nil): " ; prompt
    (butlast fields)                     ; collection
    nil                                  ; predicate
    t                                    ; require-match
@@ -241,7 +248,7 @@ BODY: sequences of argument which each argument may be a string or a
              (concat
               container
               (qz-line ntab 0 "$this->db->where")
-              (qz-line 0 0 (format "('%s', " field))
+              (qz-line 0 0 (format "('%s', " (qz-prevent-ambigu field)))
               (qz-line 0 0 "$this->input->post")
               (qz-line 0 1 (format "('f_%s'));" field)))))
           wheres)
@@ -276,15 +283,16 @@ BODY: sequences of argument which each argument may be a string or a
     (setq ntab 0))
   (unless neol
     (setq neol 0))
-  (concat
-   (qz-fields-validation (cdr (butlast fields)) ntab neol)
-   (qz-line 0 1 "")
-   (qz-if-post-open (butlast fields) ntab neol)
-   (qz-get-content (butlast fields) (+ ntab 2) neol)
-   (qz-line 0 1 "")
-   (qz-get-query-content fields (+ ntab 2) neol
-                         (qz-get-query-where fields))
-   (qz-if-post-close ntab neol)))
+  (let ((valids (qz-get-filtered-fields fields)))
+    (concat
+     (qz-fields-validation valids ntab neol)
+     (qz-line 0 1 "")
+     (qz-if-post-open (butlast fields) ntab neol)
+     (qz-get-content (butlast fields) (+ ntab 2) neol)
+     (qz-line 0 1 "")
+     (qz-get-query-content fields (+ ntab 2) neol
+                           (qz-get-filtered-fields fields))
+     (qz-if-post-close ntab neol))))
 
 (defun qz-if-post-insert-update (fields &optional ntab neol)
   "Input or update database."
