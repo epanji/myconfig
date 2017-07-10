@@ -201,16 +201,19 @@ BODY: sequences of argument which each argument may be a string or a
           field))
       names))))
 
-(defun qz-get-filtered-fields (fields)
+(defun qz-get-filtered-fields (fields &optional string)
   "Get fields after filtered."
+  (unless string
+    (setq string "fields"))
   (completing-read-multiple
-   "Optional fields with comma (nil): " ; prompt
-   (butlast fields)                     ; collection
-   nil                                  ; predicate
-   t                                    ; require-match
-   nil                                  ; initial-input
-   nil                                  ; hist
-   nil                                  ; def
+   (concat
+    "Optional " string " with comma (nil): ") ; prompt
+   (butlast fields)                           ; collection
+   nil                                        ; predicate
+   t                                          ; require-match
+   nil                                        ; initial-input
+   nil                                        ; hist
+   nil                                        ; def
    ))
 
 (defun qz-get-query-content (fields &optional ntab neol wheres)
@@ -283,7 +286,7 @@ BODY: sequences of argument which each argument may be a string or a
     (setq ntab 0))
   (unless neol
     (setq neol 0))
-  (let ((valids (qz-get-filtered-fields fields)))
+  (let ((valids (qz-get-filtered-fields fields "validations")))
     (concat
      (qz-fields-validation valids ntab neol)
      (qz-line 0 1 "")
@@ -291,7 +294,8 @@ BODY: sequences of argument which each argument may be a string or a
      (qz-get-content (butlast fields) (+ ntab 2) neol)
      (qz-line 0 1 "")
      (qz-get-query-content fields (+ ntab 2) neol
-                           (qz-get-filtered-fields fields))
+                           (qz-get-filtered-fields
+                            fields "query conditions"))
      (qz-if-post-close ntab neol))))
 
 (defun qz-if-post-insert-update (fields &optional ntab neol)
@@ -379,6 +383,10 @@ BODY: sequences of argument which each argument may be a string or a
   (unless neol
     (setq neol 0))
   (let ((validations ""))
+    (unless fields
+      (setq
+       validations
+       (qz-line ntab 1 "// need validation.")))
     (mapc
      (lambda (field)
        (setq
