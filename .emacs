@@ -22,7 +22,7 @@
  '(org-agenda-files (quote ("~/org/agenda")))
  '(package-selected-packages
    (quote
-    (psysh php-mode ox-twbs org popup web-mode shift-number restclient multiple-cursors move-dup lice emmet-mode auto-complete qzuma)))
+    (auto-complete dash emmet-mode htmlize kotlin-mode lice move-dup multiple-cursors org ox-epub ox-twbs parinfer php-mode popup qzuma restclient shift-number web-mode)))
  '(ring-bell-function (quote ignore))
  '(tab-width 4)
  '(tool-bar-mode nil)
@@ -98,6 +98,7 @@
 (put 'downcase-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
 (put 'set-goal-column 'disabled nil)
+(put 'scroll-left 'disabled nil)
 (put 'dired-find-alternate-file 'disabled nil)
 ;;
 ;;
@@ -109,7 +110,7 @@
 ;;
 ;;
 ;; org
-(add-hook 'org-mode-hook '(lambda()(move-dup-mode -1)))
+(add-hook 'org-mode-hook '(lambda () (move-dup-mode -1)))
 (global-set-key (kbd "C-c l") 'org-store-link)
 (global-set-key (kbd "C-c a") 'org-agenda)
 (global-set-key (kbd "C-c c") 'org-capture)
@@ -118,9 +119,8 @@
 ;;
 ;; slime
 (load (expand-file-name "~/quicklisp/slime-helper.el"))
+(load (expand-file-name "~/quicklisp/clhs-use-local.el") t)
 (setq inferior-lisp-program "/usr/bin/sbcl")
-(add-hook 'slime-repl-mode-hook 'electric-pair-mode 1)
-(add-hook 'slime-repl-mode-hook 'show-paren-mode 1)
 (add-hook 'lisp-mode-hook 'electric-pair-mode 1)
 (add-hook 'lisp-mode-hook 'show-paren-mode 1)
 (add-hook
@@ -130,17 +130,29 @@
 (add-hook
  'slime-repl-mode-hook
  '(lambda ()
+    (show-paren-mode 1)
+    (electric-pair-mode 1)
     (local-set-key (kbd "<f8>") 'slime-repl-clear-buffer)))
 ;;
 ;;
 ;; server
 (require 'server)
 (unless (server-running-p)
+  (set-frame-parameter nil 'fullscreen 'maximized)
   (server-start)
   (switch-to-buffer "*scratch*")
   (emacs-lock-mode 1))
 ;;
 ;;
-;; qzuma-mode
+;; parinfer
+(add-hook
+ 'parinfer-mode-hook
+ '(lambda ()
+    (show-paren-mode 1)
+    (electric-pair-mode 1)
+    (local-set-key (kbd "<f12>") 'parinfer-toggle-mode)))
+;;
+;;
+;; qzuma
+(require 'qzuma)
 (prefer-coding-system 'utf-8)
-(load-file "~/myconfig/elisp/qzuma/qzuma.elc")
