@@ -1,10 +1,8 @@
-;;
-;;
-;; custom-set-variables was added by Custom.
-;; If you edit it by hand, you could mess it up, so be careful.
-;; Your init file should contain only one such instance.
-;; If there is more than one, they won't work right.
 (custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(ansi-color-faces-vector
    [default default default italic underline success warning error])
  '(ansi-color-names-vector
@@ -21,18 +19,21 @@
  '(org-agenda-files (quote ("~/org/agenda")))
  '(package-selected-packages
    (quote
-    (auto-complete dash emmet-mode htmlize kotlin-mode lice move-dup multiple-cursors org ox-epub ox-twbs parinfer php-mode popup qzuma restclient shift-number web-mode)))
+    (auto-complete dash emmet-mode geben htmlize kotlin-mode lice move-dup multiple-cursors ob-php org ox-epub ox-twbs parinfer php-mode popup qzuma restclient shift-number web-mode)))
  '(ring-bell-function (quote ignore))
  '(tab-width 4)
  '(tool-bar-mode nil)
  '(version-control t))
-;;
-;;
-;; custom-set-faces was added by Custom.
-;; If you edit it by hand, you could mess it up, so be careful.
-;; Your init file should contain only one such instance.
-;; If there is more than one, they won't work right.
-(custom-set-faces)
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+
+;; -------------------------------------------------------------------------- ;;
+;;                    Manual configuration start from here                    ;;
+;; -------------------------------------------------------------------------- ;;
 ;;
 ;;
 ;; melpa
@@ -104,6 +105,8 @@
 (global-set-key (kbd "C-<tab>") 'other-window)
 (global-set-key (kbd "<f8>") 'delete-other-windows)
 (global-set-key (kbd "<f9>") 'emacs-lock-mode)
+(global-set-key (kbd "s-SPC") 'point-to-register)
+(global-set-key (kbd "s-j") 'jump-to-register)
 ;;
 ;;
 ;; org
@@ -134,13 +137,14 @@
 ;;
 ;; server
 (require 'server)
+(unless (server-running-p)
+  (switch-to-buffer "*scratch*")
+  (emacs-lock-mode 1))
 (add-hook
  'window-setup-hook
  '(lambda ()
     (unless (server-running-p)
-      (switch-to-buffer "*scratch*")
       (server-start)
-      (emacs-lock-mode 1)
       (set-frame-parameter nil 'fullscreen 'maximized))))
 ;;
 ;;
