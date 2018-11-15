@@ -1,0 +1,51 @@
+;; -*-lisp-*-
+
+(in-package :stumpwm)
+
+(set-prefix-key (kbd "C-ESC"))
+
+(load-module "amixer")
+
+(setf *mouse-focus-policy* :click) ;; :click, :ignore, :sloppy
+
+(define-key *root-map* (kbd "M-l") "exec xlock")
+(define-key *root-map* (kbd "C-p") "mode-line")
+(define-key *root-map* (kbd "C-q") "echo-sensors")
+(define-key *root-map* (kbd "s-e") "exec dolphin")
+(define-key *root-map* (kbd ",") "amixer-master-1-")
+(define-key *root-map* (kbd ".") "amixer-master-1+")
+(define-key *root-map* (kbd "Menu") "command-mode")
+(define-key *root-map* (kbd "Tab") "expose")
+
+;; Need authority for org.freedesktop.upower.policy to be worked.
+(define-key *root-map* (kbd "XF86Sleep") "suspend")
+(defcommand suspend () ()
+  (run-shell-command
+   (format nil "dbus-send ~a ~a ~a ~a ~a"
+           "--system"
+           "--print-reply"
+           "--dest='org.freedesktop.UPower'"
+           "/org/freedesktop/UPower"
+           "org.freedesktop.UPower.Suspend")))
+
+;; Need feh application.
+(run-shell-command "feh --bg-scale /home/panji/Pictures/desktop-wm.png")
+
+(defcommand echo-sensors () ()
+  (message "~a" (subseq (run-shell-command "sensors | grep temp1:" t) 12)))
+
+(load "~/quicklisp/dists/quicklisp/software/slime-v2.22/swank-loader.lisp")
+(swank-loader:init)
+(defcommand swank () ()
+  (let ((port 5005)
+        (style swank:*communication-style*))
+    (swank:create-server :port port :style style :dont-close t)
+    (message "~a. ~a ~a.~&~a. Eval: (~a ~a)"
+             "Starting swank"
+             "M-x slime-connect using port" port
+             "Stop server" "swank:stop-server" port)))
+
+(define-frame-preference "Default" (nil nil nil)
+  (0 t nil :class "Firefox")
+  (1 t nil :class "Mplayer")
+  (2 t nil :class "XTerm"))
