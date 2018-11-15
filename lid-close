@@ -1,0 +1,4 @@
+# /etc/acpi/events/lid-close
+
+event=button/lid LID close
+action= dbus-send --system --print-reply --dest="org.freedesktop.UPower" /org/freedesktop/UPower org.freedesktop.UPower.Suspend
