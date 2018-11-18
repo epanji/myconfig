@@ -11,11 +11,14 @@
 (define-key *root-map* (kbd "M-l") "exec xlock")
 (define-key *root-map* (kbd "C-p") "mode-line")
 (define-key *root-map* (kbd "C-q") "echo-sensors")
+(define-key *root-map* (kbd "C-f") "echo-fortune")
+(define-key *root-map* (kbd "C-t") "exec konsole")
 (define-key *root-map* (kbd "s-e") "exec dolphin")
 (define-key *root-map* (kbd ",") "amixer-master-1-")
 (define-key *root-map* (kbd ".") "amixer-master-1+")
 (define-key *root-map* (kbd "Menu") "command-mode")
 (define-key *root-map* (kbd "Tab") "expose")
+(define-key *root-map* (kbd "M-F2") "find-applications")
 
 ;; Need authority for org.freedesktop.upower.policy to be worked.
 (define-key *root-map* (kbd "XF86Sleep") "suspend")
@@ -29,13 +32,27 @@
            "org.freedesktop.UPower.Suspend")))
 
 ;; Need feh application.
-(run-shell-command "feh --bg-scale /home/panji/Pictures/desktop-wm.png")
+(run-shell-command (format nil "~a ~a" "feh --bg-scale"
+                           (merge-pathnames "Pictures/desktop-wm.png"
+                                            (user-homedir-pathname))))
 
 (defcommand echo-sensors () ()
   (message "~a" (subseq (run-shell-command "sensors | grep temp1:" t) 12)))
 
-(load "~/quicklisp/dists/quicklisp/software/slime-v2.22/swank-loader.lisp")
+(defcommand echo-fortune () ()
+  (let ((*message-window-gravity* :center)
+        (*timeout-wait* 10))
+    (message "~a" (substitute #\space #\tab (run-shell-command "fortune" t)))))
+
+(defcommand find-applications () ()
+  (run-shell-command "xfce4-appfinder"))
+
+(load (merge-pathnames
+       "swank-loader.lisp"
+       (asdf:system-source-directory
+        (asdf:find-system :swank))))
 (swank-loader:init)
+
 (defcommand swank () ()
   (let ((port 5005)
         (style swank:*communication-style*))
