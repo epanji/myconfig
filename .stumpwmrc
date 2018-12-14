@@ -4,7 +4,7 @@
 
 (set-prefix-key (kbd "C-ESC"))
 
-(load-module "amixer")
+;; (load-module "amixer")
 
 (setf *mouse-focus-policy* :click) ;; :click, :ignore, :sloppy
 
@@ -17,7 +17,6 @@
 (define-key *root-map* (kbd ",") "amixer-master-1-")
 (define-key *root-map* (kbd ".") "amixer-master-1+")
 (define-key *root-map* (kbd "Menu") "command-mode")
-(define-key *root-map* (kbd "Tab") "expose")
 (define-key *root-map* (kbd "M-F2") "find-applications")
 
 ;; Need authority for org.freedesktop.upower.policy to be worked.
@@ -33,7 +32,7 @@
 
 ;; Need feh application.
 (run-shell-command (format nil "~a ~a" "feh --bg-scale"
-                           (merge-pathnames "Pictures/desktop-wm.png"
+                           (merge-pathnames "Pictures/background-001.png"
                                             (user-homedir-pathname))))
 
 (defcommand echo-sensors () ()
@@ -46,6 +45,12 @@
 
 (defcommand find-applications () ()
   (run-shell-command "xfce4-appfinder"))
+
+(defcommand small-window-float () ()
+  (float-window (current-window) (current-group))
+  (float-window-move-resize (current-window)
+                            :x 1008 :y 547 :width 332 :height 187)
+  (pushnew (current-window) (group-on-top-windows (current-group))))
 
 (load (merge-pathnames
        "swank-loader.lisp"
@@ -66,3 +71,23 @@
   (0 t nil :class "Firefox")
   (1 t nil :class "Mplayer")
   (2 t nil :class "XTerm"))
+
+(define-frame-preference "Demo" (nil nil nil)
+  (0 t nil :class "Emacs")
+  (1 t nil :title "Demo"))
+
+;;;; for debug only
+;; (redirect-all-output (data-dir-file "debug-output" "txt"))
+(setf *debug-level* 3) ;; default 0
+(defcommand show-message-for-debug () ()
+  (with-open-file (stream "/home/panji/stumpwm-last-message.txt"
+                          :direction :output
+                          :if-exists :supersede
+                          :if-does-not-exist :create)
+    (format stream "~a" (first (screen-last-msg (current-screen)))))
+  (message "screen~10t: ~a~&group~10t: ~a~&head~10t: ~a~&window~10t: ~a~&"
+           (current-screen)
+           (current-group)
+           (current-head)
+           (current-window)))
+(define-key *root-map* (kbd "Tab") "show-message-for-debug")
