@@ -4,7 +4,7 @@
 
 (set-prefix-key (kbd "C-ESC"))
 
-;; (load-module "amixer")
+(load-module "amixer")
 
 (setf *mouse-focus-policy* :click) ;; :click, :ignore, :sloppy
 
@@ -78,16 +78,16 @@
 
 ;;;; for debug only
 ;; (redirect-all-output (data-dir-file "debug-output" "txt"))
-(setf *debug-level* 3) ;; default 0
-(defcommand show-message-for-debug () ()
-  (with-open-file (stream "/home/panji/stumpwm-last-message.txt"
-                          :direction :output
-                          :if-exists :supersede
-                          :if-does-not-exist :create)
-    (format stream "~a" (first (screen-last-msg (current-screen)))))
-  (message "screen~10t: ~a~&group~10t: ~a~&head~10t: ~a~&window~10t: ~a~&"
-           (current-screen)
-           (current-group)
-           (current-head)
-           (current-window)))
-(define-key *root-map* (kbd "Tab") "show-message-for-debug")
+;; (setf *debug-level* 3) ;; default 0
+;; (defcommand show-message-for-debug () ()
+;;   (with-open-file (stream "/home/panji/stumpwm-last-message.txt"
+;;                           :direction :output
+;;                           :if-exists :supersede
+;;                           :if-does-not-exist :create)
+;;     (format stream "~a" (first (screen-last-msg (current-screen)))))
+;;   (message "screen~10t: ~a~&group~10t: ~a~&head~10t: ~a~&window~10t: ~a~&"
+;;            (current-screen)
+;;            (current-group)
+;;            (current-head)
+;;            (current-window)))
+;; (define-key *root-map* (kbd "Tab") "show-message-for-debug")
