@@ -79,24 +79,61 @@
   (1 t nil :title "Demo"))
 
 ;;;; for debug only
-;; (setf *ignore-wm-inc-hints* t)
-;; (setf *normal-border-width* 4)
-;; (setf *transient-border-width* 3)
-;; (setf *float-window-border* 5)
-;; (setf *float-window-title-height* 10)
-;; (redirect-all-output (data-dir-file "debug-output" "txt"))
-;; (setf *debug-level* 3) ;; default 0
-;; (setf *top-level-error-action* :break)
-;; (setf *debug-expose-events* nil)
-;; (defcommand show-message-for-debug () ()
-;;   (with-open-file (stream "/home/panji/stumpwm-last-message.txt"
-;;                           :direction :output
-;;                           :if-exists :supersede
-;;                           :if-does-not-exist :create)
-;;     (format stream "~a" (first (screen-last-msg (current-screen)))))
-;;   (message "screen~10t: ~a~&group~10t: ~a~&head~10t: ~a~&window~10t: ~a~&"
-;;            (current-screen)
-;;            (current-group)
-;;            (current-head)
-;;            (current-window)))
-;; (define-key *root-map* (kbd "Tab") "show-message-for-debug")
+#|
+(setf *ignore-wm-inc-hints* t)
+(setf *normal-border-width* 4)
+(setf *transient-border-width* 3)
+(setf *float-window-border* 5)
+(setf *float-window-title-height* 10)
+;;
+(redirect-all-output (data-dir-file "debug-output" "txt"))
+(setf *debug-level* 3) ;; default 0
+(setf *top-level-error-action* :break)
+(setf *debug-expose-events* nil)
+;;
+(defcommand show-top-windows () ()
+  (message "~a~&~a~&~a"
+           (current-group)
+           (current-window)
+           (top-windows)))
+(defcommand show-message-for-debug () ()
+  (with-open-file (stream "/home/panji/stumpwm-last-message.txt"
+                          :direction :output
+                          :if-exists :supersede
+                          :if-does-not-exist :create)
+    (format stream "~a" (first (screen-last-msg (current-screen)))))
+  (message "screen~10t: ~a~&group~10t: ~a~&head~10t: ~a~&window~10t: ~a~&"
+           (current-screen)
+           (current-group)
+           (current-head)
+           (current-window)))
+(define-key *root-map* (kbd "Tab") "show-top-windows")
+|#
+
+;;; Start patches
+
+(ql:quickload :generic-structure-reader)
+(cl:use-package :generic-structure-reader)
+
+(define-generic-structure-reader mode-line-height (mode-line)
+  (:method ((object null)) 0))
+
+(define-generic-structure-reader frame-number (frame)
+  (:method ((object null)) nil))
+
+(define-generic-structure-reader frame-x (frame)
+  (:method ((object null)) 0))
+
+(define-generic-structure-reader frame-y (frame)
+  (:method ((object null)) 0))
+
+(define-generic-structure-reader head-number (head)
+  (:method ((object null)) nil))
+
+(define-generic-structure-reader head-x (head)
+  (:method ((object null)) 0))
+
+(define-generic-structure-reader head-y (head)
+  (:method ((object null)) 0))
+
+;;; End patches
