@@ -18,6 +18,8 @@
 (define-key *root-map* (kbd ".") "amixer-master-1+")
 (define-key *root-map* (kbd "Menu") "command-mode")
 (define-key *root-map* (kbd "M-F2") "find-applications")
+(define-key *root-map* (kbd "[") "resize -1 0")
+(define-key *root-map* (kbd "]") "resize 0 -1")
 
 ;; Need authority for org.freedesktop.upower.policy to be worked.
 (define-key *root-map* (kbd "XF86Sleep") "suspend")
@@ -38,10 +40,22 @@
 (defcommand echo-sensors () ()
   (message "~a" (subseq (run-shell-command "sensors | grep temp1:" t) 12)))
 
+;; Need fortune and flite applications.
 (defcommand echo-fortune () ()
   (let ((*message-window-gravity* :center)
+        (*message-window-padding* 50)
+        (*message-window-y-padding* 30)
         (*timeout-wait* 10))
-    (message "~a" (substitute #\space #\tab (run-shell-command "fortune" t)))))
+    (let ((text (substitute #\space #\tab (run-shell-command "fortune" t)))
+          (pitch (write-to-string (+ 200 (* (random 10) 10)))))
+      (message "~a" text)
+      (run-shell-command
+       (concatenate 'string
+                    "flite -voice slt "
+                    "--setf int_f0_target_mean="
+                    pitch " "
+                    "--setf duration_stretch=1.25 -t "
+                    (write-to-string (remove #\" text)))))))
 
 (defcommand find-applications () ()
   (run-shell-command "xfce4-appfinder"))
@@ -135,5 +149,9 @@
 
 (define-generic-structure-reader head-y (head)
   (:method ((object null)) 0))
+
+(defun window-property (window prop)
+  (handler-case (xlib:get-property (window-xwin window) prop)
+    (xlib:window-error () (delete-window window) nil)))
 
 ;;; End patches
