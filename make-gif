@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# Command for creating high quality gif using ffmpeg
+
+# Refference from https://ffmpeg.org/ffmpeg-filters.html
+#
+# ffmpeg -i input.mkv -vf palettegen palette.png
+# ffmpeg -i input.mkv -i palette.png -lavfi paletteuse output.gif
+#
+# Modified by Panji Kusuma., <epanji at gmail dot com>
+
+PALETTE=`mktemp -u`.png
+FILTERS="fps=10, scale=600:-1:flags=lanczos"
+
+ffmpeg -v warning -i $1 -vf "$FILTERS, palettegen" -updatefirst 1 -y $PALETTE && \
+ffmpeg -v warning -i $1 -i $PALETTE -lavfi "$FILTERS [video]; [video][1:v] paletteuse" -y $2 && \
+rm $PALETTE
