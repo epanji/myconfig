@@ -1,0 +1,27 @@
+#!/bin/sh
+#
+# /opt/bin/preferred-network
+#
+# Change preferred network by AT COMMAND
+# sudo -v && sudo sh -c "echo -ne 'AT+ZSNT=2,0,0\r\n' > /dev/ttyUSB2";
+
+AT_COMMAND=AT+ZSNT
+
+NETWORK=2
+DEVICE=/dev/ttyUSB2
+
+if [ ! -z "$1" ]; then
+    NETWORK=$1
+fi
+
+if [ ! -z "$2" ]; then
+    DEVICE=$2
+fi
+
+echo "";
+echo "#";
+echo "# preferred-network code=${NETWORK} device=${DEVICE}";
+echo "#";
+echo "";
+ACTION="echo -ne '${AT_COMMAND}=${NETWORK},0,0\r\n' > ${DEVICE}";
+echo $ACTION && echo "" && sudo -v && sudo sh -c "${ACTION}";
