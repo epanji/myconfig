@@ -1,12 +1,24 @@
-;; -*-lisp-*-
+h;; -*-lisp-*-
 
 (in-package :stumpwm)
 
 (set-prefix-key (kbd "C-ESC"))
 
+;;; Start amixer
 (load-module "amixer")
+(define-interactive-keymap volume-control ()
+  ((kbd ".") "amixer-master-1+")
+  ((kbd ",") "amixer-master-1-")
+  ((kbd "C-.") "exit-volume-control")
+  ((kbd "C-,") "exit-volume-control"))
+(define-key *root-map* (kbd ".") "volume-control")
+(define-key *root-map* (kbd ",") "volume-control")
+;;; End amixer
 
+(setf *window-number-map* "1234567890")
 (setf *mouse-focus-policy* :click) ;; :click, :ignore, :sloppy
+;; (setf *default-selections* '(:clipboard nil))
+;; (setf *input-completion-style* (make-input-completion-style-unambiguous))
 
 (define-key *root-map* (kbd "M-l") "exec xlock")
 (define-key *root-map* (kbd "C-p") "mode-line")
@@ -14,8 +26,6 @@
 (define-key *root-map* (kbd "C-f") "echo-fortune")
 (define-key *root-map* (kbd "C-t") "exec konsole")
 (define-key *root-map* (kbd "s-e") "exec dolphin")
-(define-key *root-map* (kbd ",") "amixer-master-1-")
-(define-key *root-map* (kbd ".") "amixer-master-1+")
 (define-key *root-map* (kbd "Menu") "command-mode")
 (define-key *root-map* (kbd "M-F2") "find-applications")
 (define-key *root-map* (kbd "[") "resize -1 0")
@@ -83,66 +93,35 @@
         (message "(swank:stop-server ~a)"
                  (progn (swank:stop-server port) port)))))
 
-(define-frame-preference "Default" (nil nil nil)
-  (0 t nil :class "Firefox")
-  (1 t nil :class "Mplayer")
+(define-frame-preference "Default" (0 t nil :class "Firefox")
+  (1 t nil :class "MPlayer")
   (2 t nil :class "XTerm"))
 
-(define-frame-preference "Demo" (nil nil nil)
-  (0 t nil :class "Emacs")
-  (1 t nil :title "Demo"))
+(define-frame-preference "Emacs" (1 t nil :title "Demo")
+  (0 t t :restore "Emacs.group" :class "Emacs"))
 
-;;;; for debug only
-#|
-(setf *ignore-wm-inc-hints* t)
-(setf *normal-border-width* 4)
-(setf *transient-border-width* 3)
-(setf *float-window-border* 5)
-(setf *float-window-title-height* 10)
-;;
-(redirect-all-output (data-dir-file "debug-output" "txt"))
-(setf *debug-level* 3) ;; default 0
-(setf *top-level-error-action* :break)
-(setf *debug-expose-events* nil)
-;;
-(defcommand show-top-windows () ()
-  (message "~a~&~a~&~a"
-           (current-group)
-           (current-window)
-           (top-windows)))
-(defcommand show-message-for-debug () ()
-  (with-open-file (stream "/home/panji/stumpwm-last-message.txt"
-                          :direction :output
-                          :if-exists :supersede
-                          :if-does-not-exist :create)
-    (format stream "~a" (first (screen-last-msg (current-screen)))))
-  (message "screen~10t: ~a~&group~10t: ~a~&head~10t: ~a~&window~10t: ~a~&"
-           (current-screen)
-           (current-group)
-           (current-head)
-           (current-window)))
-(define-key *root-map* (kbd "Tab") "show-top-windows")
-|#
+(define-frame-preference "Rec" (2 t nil :class "XTerm")
+  (0 t nil :instance "pavucontrol")
+  (1 t t :instance "simplescreenrecorder" :create "Rec.group" :restore "Rec.group" ))
 
 ;;; Start patches
-
 (ql:quickload :generic-structure-reader)
 (cl:use-package :generic-structure-reader)
 
 (define-generic-structure-reader mode-line-height (mode-line)
   (:method ((object null)) 0))
 
-(define-generic-structure-reader frame-number (frame)
-  (:method ((object null)) nil))
+;; (define-generic-structure-reader frame-number (frame)
+;;   (:method ((object null)) nil))
+;;
+;; (define-generic-structure-reader head-number (head)
+;;   (:method ((object null)) nil))
 
 (define-generic-structure-reader frame-x (frame)
   (:method ((object null)) 0))
 
 (define-generic-structure-reader frame-y (frame)
   (:method ((object null)) 0))
-
-(define-generic-structure-reader head-number (head)
-  (:method ((object null)) nil))
 
 (define-generic-structure-reader head-x (head)
   (:method ((object null)) 0))
@@ -153,5 +132,4 @@
 (defun window-property (window prop)
   (handler-case (xlib:get-property (window-xwin window) prop)
     (xlib:window-error () (delete-window window) nil)))
-
 ;;; End patches
