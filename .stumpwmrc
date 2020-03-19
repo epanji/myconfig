@@ -1,4 +1,4 @@
-h;; -*-lisp-*-
+;; -*-lisp-*-
 
 (in-package :stumpwm)
 
@@ -28,14 +28,20 @@ h;; -*-lisp-*-
 (define-key *root-map* (kbd "s-e") "exec dolphin")
 (define-key *root-map* (kbd "Menu") "command-mode")
 (define-key *root-map* (kbd "M-F2") "find-applications")
-(define-key *root-map* (kbd "[") "resize -1 0")
-(define-key *root-map* (kbd "]") "resize 0 -1")
+(define-key *root-map* (kbd "[") "resize-increment 1 y")
+(define-key *root-map* (kbd "]") "resize-increment 10 y")
+
+(defcommand resize-increment (delta iresize-p)
+    ((:number "Delta (number): ")
+     (:y-or-n "Execute iresize? "))
+  (setf *resize-increment* delta)
+  (when iresize-p (iresize)))
 
 ;; Need authority for org.freedesktop.upower.policy to be worked.
 (define-key *root-map* (kbd "XF86Sleep") "suspend")
 (defcommand suspend () ()
   (run-shell-command
-   (format nil "dbus-send ~a ~a ~a ~a ~a"
+   (format nil "dbus-send ~A ~A ~A ~A ~A"
            "--system"
            "--print-reply"
            "--dest='org.freedesktop.UPower'"
@@ -43,12 +49,12 @@ h;; -*-lisp-*-
            "org.freedesktop.UPower.Suspend")))
 
 ;; Need feh application.
-(run-shell-command (format nil "~a ~a" "feh --bg-scale"
+(run-shell-command (format nil "~A ~A" "feh --bg-scale"
                            (merge-pathnames "Pictures/background-001.png"
                                             (user-homedir-pathname))))
 
 (defcommand echo-sensors () ()
-  (message "~a" (subseq (run-shell-command "sensors | grep temp1:" t) 12)))
+  (message "~A" (subseq (run-shell-command "sensors | grep temp1:" t) 12)))
 
 ;; Need fortune and flite applications.
 (defcommand echo-fortune () ()
@@ -58,7 +64,7 @@ h;; -*-lisp-*-
         (*timeout-wait* 10))
     (let ((text (substitute #\space #\tab (run-shell-command "fortune" t)))
           (pitch (write-to-string (+ 200 (* (random 10) 10)))))
-      (message "~a" text)
+      (message "~A" text)
       (run-shell-command
        (concatenate 'string
                     "flite -voice slt "
@@ -89,8 +95,8 @@ h;; -*-lisp-*-
     (handler-case (swank:create-server :port port :style style :dont-close t)
       (error () (when (y-or-n-p "Stop server? ") (setf create-server-p nil))))
     (if create-server-p
-        (message "M-x slime-connect using port ~a" port)
-        (message "(swank:stop-server ~a)"
+        (message "M-x slime-connect using port ~A" port)
+        (message "(swank:stop-server ~A)"
                  (progn (swank:stop-server port) port)))))
 
 (define-frame-preference "Default" (0 t nil :class "Firefox")
@@ -102,7 +108,7 @@ h;; -*-lisp-*-
 
 (define-frame-preference "Rec" (2 t nil :class "XTerm")
   (0 t nil :instance "pavucontrol")
-  (1 t t :instance "simplescreenrecorder" :create "Rec.group" :restore "Rec.group" ))
+  (1 t t :instance "simplescreenrecorder" :create "Rec.group" :restore "Rec.group"))
 
 ;;; Start patches
 (ql:quickload :generic-structure-reader)
