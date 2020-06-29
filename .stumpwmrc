@@ -4,6 +4,15 @@
 
 (set-prefix-key (kbd "C-ESC"))
 
+;;; Load xmodmap
+;;; !
+;;; ! Change Caps_Lock to Control_L
+;;; !
+;;; remove Lock = Caps_Lock
+;;; add Control = Caps_Lock
+;;; keysym Caps_Lock = Control_L
+(run-shell-command "xmodmap ~/.xmodmaprc")
+
 ;;; Start amixer
 (load-module "amixer")
 (define-interactive-keymap volume-control ()
@@ -31,7 +40,7 @@
 (define-key *root-map* (kbd "[") "resize-increment 1 y")
 (define-key *root-map* (kbd "]") "resize-increment 10 y")
 
-(defcommand resize-increment (delta iresize-p)
+(defcommand (resize-increment tile-group) (delta iresize-p)
     ((:number "Delta (number): ")
      (:y-or-n "Execute iresize? "))
   (setf *resize-increment* delta)
@@ -49,7 +58,7 @@
            "org.freedesktop.UPower.Suspend")))
 
 ;; Need feh application.
-(run-shell-command (format nil "~A ~A" "feh --bg-scale"
+(run-shell-command (format nil "feh ~A ~A" "--bg-scale"
                            (merge-pathnames "Pictures/background-001.png"
                                             (user-homedir-pathname))))
 
@@ -60,11 +69,10 @@
 (defcommand echo-fortune () ()
   (let ((*message-window-gravity* :center)
         (*message-window-padding* 50)
-        (*message-window-y-padding* 30)
-        (*timeout-wait* 10))
+        (*message-window-y-padding* 30))
     (let ((text (substitute #\space #\tab (run-shell-command "fortune" t)))
           (pitch (write-to-string (+ 200 (* (random 10) 10)))))
-      (message "~A" text)
+      (message-no-timeout "~A" text)
       (run-shell-command
        (concatenate 'string
                     "flite -voice slt "
@@ -76,16 +84,14 @@
 (defcommand find-applications () ()
   (run-shell-command "xfce4-appfinder"))
 
-(defcommand small-window-float () ()
-  (float-window (current-window) (current-group))
-  (float-window-move-resize (current-window)
-                            :x 1008 :y 547 :width 332 :height 187)
-  (pushnew (current-window) (group-on-top-windows (current-group))))
+(defcommand (small-window-float tile-group) () ()
+  (let ((*float-window-title-height* 1))
+    (float-window (current-window) (current-group))
+    (float-window-move-resize (current-window)
+                              :x 1008 :y 547 :width 332 :height 187)
+    (pushnew (current-window) (group-on-top-windows (current-group)))))
 
-(load (merge-pathnames
-       "swank-loader.lisp"
-       (asdf:system-source-directory
-        (asdf:find-system :swank))))
+(load (merge-pathnames "swank-loader.lisp" (asdf:system-source-directory "swank")))
 (swank-loader:init)
 
 (defcommand swank () ()
@@ -97,11 +103,12 @@
     (if create-server-p
         (message "M-x slime-connect using port ~A" port)
         (message "(swank:stop-server ~A)"
-                 (progn (swank:stop-server port) port)))))
+                 (prog1 port (swank:stop-server port))))))
 
 (define-frame-preference "Default" (0 t nil :class "Firefox")
   (1 t nil :class "MPlayer")
-  (2 t nil :class "XTerm"))
+  (2 t nil :class "XTerm")
+  (:float t nil :class "xine"))
 
 (define-frame-preference "Emacs" (1 t nil :title "Demo")
   (0 t t :restore "Emacs.group" :class "Emacs"))
@@ -109,6 +116,17 @@
 (define-frame-preference "Rec" (2 t nil :class "XTerm")
   (0 t nil :instance "pavucontrol")
   (1 t t :instance "simplescreenrecorder" :create "Rec.group" :restore "Rec.group"))
+
+;;; Start Theme
+(progn
+  (setf *float-window-title-height* 5)
+  (setf *colors* '("black" "red" "green" "yellow" "blue" "cyan" "orange" "white"))
+  (set-bg-color "purple4")
+  (set-border-color "purple3")
+  (set-float-focus-color "purple3")
+  (set-float-unfocus-color "gray65")
+  (update-color-map (current-screen)))
+;;; End Theme
 
 ;;; Start patches
 (ql:quickload :generic-structure-reader)
