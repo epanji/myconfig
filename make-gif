@@ -9,6 +9,18 @@
 #
 # Modified by Panji Kusuma., <epanji at gmail dot com>
 
+
+if [ -z "$1" ]; then
+    echo "Usage: $0 <input> <optional output> <optional width>"
+    echo ""
+    exit 1
+fi
+
+OUTPUT=$1.gif
+if [ ! -z "$2" ]; then
+    OUTPUT=$2
+fi
+
 WIDTH=480
 PALETTE=`mktemp -u`.png
 if [ ! -z "$3" ]; then
@@ -17,6 +29,8 @@ fi
 
 FILTERS="fps=10, scale=$WIDTH:-1:flags=lanczos"
 
-ffmpeg -v warning -i $1 -vf "$FILTERS, palettegen" -updatefirst 1 -y $PALETTE && \
-ffmpeg -v warning -i $1 -i $PALETTE -lavfi "$FILTERS [video]; [video][1:v] paletteuse" -y $2 && \
+ffmpeg -v warning -i $1 -vf "$FILTERS, palettegen" -y -update 1 $PALETTE && \
+ffmpeg -v warning -i $1 -i $PALETTE -lavfi "$FILTERS [video]; [video][1:v] paletteuse" -y $OUTPUT && \
 rm $PALETTE
+
+exit 0
