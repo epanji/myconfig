@@ -1,0 +1,60 @@
+#!/bin/sh
+
+# Command for downloading chaptered images using WGET
+#
+# Sample base-url.txt
+# echo "http://localhost/file/images" > base-url.txt
+#
+# Created by Panji Kusuma. <epanji at gmail dot com>
+
+CUR=$1                          # Current Chapter
+MAX=$2                          # Last Chapter
+EXT=$3                          # File Extension
+
+if [ -f base-url.txt ]; then
+    WGET_LINK=${WGET_LINK:-$(cat base-url.txt)}
+    if [ -z "$WGET_LINK" ]; then
+        echo "base-url.txt is empty"
+        exit 1
+    fi
+else
+    echo "base-url.txt does not exists"
+    exit 1
+fi
+
+if [ -z "$1" ]; then
+    echo "\$ cimgs-dl CHAP MAX EXT"
+    echo ""
+    exit 1
+fi
+
+if [ -z "$2" ]; then
+    MAX=$1
+    echo "MAX equals CHAP"
+fi
+
+if [ -z "$3" ]; then
+    EXT=jpg
+fi
+
+until [ $CUR -gt $MAX ]; do
+    mkdir -p chapter-$CUR
+    cd chapter-$CUR
+    if [ $? -eq 0 ]; then
+        for i in {1..500}; do
+            if [ -f $i.$EXT ]; then
+                echo "File $i.$EXT exists"
+            else
+                wget $WGET_LINK/$CUR/$i.$EXT
+                if [ $? -ne 0 ]; then
+                    break
+                fi
+            fi
+        done
+    fi
+    cd ..
+    ((CUR++))
+done
+
+exit 0
+
