@@ -11,7 +11,7 @@
 ;;; remove Lock = Caps_Lock
 ;;; add Control = Caps_Lock
 ;;; keysym Caps_Lock = Control_L
-(run-shell-command "xmodmap ~/.xmodmaprc")
+(run-shell-command "xmodmap ~/.xmodmaprc &> /dev/null")
 
 ;;; Start amixer
 (load-module "amixer")
@@ -36,9 +36,14 @@
 (define-key *root-map* (kbd "C-t") "exec konsole")
 (define-key *root-map* (kbd "s-e") "exec dolphin")
 (define-key *root-map* (kbd "Menu") "command-mode")
-(define-key *root-map* (kbd "M-F2") "find-applications")
 (define-key *root-map* (kbd "[") "resize-increment 1 y")
 (define-key *root-map* (kbd "]") "resize-increment 10 y")
+(define-key *root-map* (kbd "C-z") "suspend")
+(define-key *root-map* (kbd "C-DEL") "gc")
+
+(defcommand gc () ()
+  (sb-ext:gc :full t)
+  (message "Garbage collected."))
 
 (defcommand (resize-increment tile-group) (delta iresize-p)
     ((:number "Delta (number): ")
@@ -46,16 +51,45 @@
   (setf *resize-increment* delta)
   (when iresize-p (iresize)))
 
-;; Need authority for org.freedesktop.upower.policy to be worked.
-(define-key *root-map* (kbd "XF86Sleep") "suspend")
+;; Need authority for org.freedesktop.login1 to be worked.
 (defcommand suspend () ()
   (run-shell-command
-   (format nil "dbus-send ~A ~A ~A ~A ~A"
-           "--system"
-           "--print-reply"
-           "--dest='org.freedesktop.UPower'"
-           "/org/freedesktop/UPower"
-           "org.freedesktop.UPower.Suspend")))
+   (format nil "dbus-send ~
+           --system ~
+           --print-reply ~
+           --dest='org.freedesktop.login1' ~
+           /org/freedesktop/login1 ~
+           org.freedesktop.login1.Manager.Suspend ~
+           boolean:false") t))
+
+(defun idle-suspend (&optional (secs 300) debugp)
+  (let ((idle (idle-time (current-screen)))
+        (windows (mapcar 'window-class (all-windows)))
+        (exceptions (list "MPlayer" "xine" "Player" "QMLPlayer" "dragonplayer")))
+    (if (and (< secs idle)
+             (null (intersection windows exceptions :test 'string=)))
+        (suspend)
+        (when debugp (message "Idle time: ~D seconds" idle)))))
+
+(defvar *suspend-timer* (run-with-timer 0 60 'idle-suspend 300 nil))
+
+(defcommand run-suspend-timer () ()
+  (when (and (timer-p *suspend-timer*)
+             (not (find *suspend-timer* *timer-list*)))
+    (schedule-timer *suspend-timer* 10)
+    (labels ((append-to-list ()
+               (sb-thread:with-mutex (*timer-list-lock*)
+                 (setf *timer-list*
+                       (merge 'list *timer-list* (list *suspend-timer*)
+                              #'< :key #'timer-time)))))
+      (call-in-main-thread #'append-to-list)))
+  (message "~{~A~%~}" *timer-list*))
+
+(defcommand cancel-suspend-timer () ()
+  (if (timer-p *suspend-timer*)
+      (progn (cancel-timer *suspend-timer*)
+             (message "Suspend timer cancelled."))
+      (message "No suspend timer.")))
 
 ;; Need feh application.
 (run-shell-command (format nil "feh ~A ~A" "--bg-scale"
@@ -63,7 +97,7 @@
                                             (user-homedir-pathname))))
 
 (defcommand echo-sensors () ()
-  (message "~A" (subseq (run-shell-command "sensors | grep temp1:" t) 12)))
+  (message "~A" (subseq (run-shell-command "sensors asus-isa-0000 | grep temp1:" t) 12)))
 
 ;; Need fortune and flite applications.
 (defcommand echo-fortune () ()
@@ -80,9 +114,6 @@
                     pitch " "
                     "--setf duration_stretch=1.25 -t "
                     (write-to-string (remove #\" text)))))))
-
-(defcommand find-applications () ()
-  (run-shell-command "xfce4-appfinder"))
 
 (defcommand (small-window-float tile-group) () ()
   (let ((*float-window-title-height* 1))
@@ -110,12 +141,12 @@
   (2 t nil :class "XTerm")
   (:float t nil :class "xine"))
 
-(define-frame-preference "Emacs" (1 t nil :title "Demo")
-  (0 t t :restore "Emacs.group" :class "Emacs"))
+;; (define-frame-preference "Emacs" (1 t nil :title "Demo")
+;;   (0 t t :restore "Emacs" :class "Emacs"))
 
-(define-frame-preference "Rec" (2 t nil :class "XTerm")
-  (0 t nil :instance "pavucontrol")
-  (1 t t :instance "simplescreenrecorder" :create "Rec.group" :restore "Rec.group"))
+;; (define-frame-preference "Rec" (2 t nil :class "XTerm")
+;;   (0 t nil :instance "pavucontrol")
+;;   (1 t t :instance "simplescreenrecorder" :create "Rec" :restore "Rec"))
 
 ;;; Start Theme
 (progn
@@ -137,7 +168,7 @@
 
 ;; (define-generic-structure-reader frame-number (frame)
 ;;   (:method ((object null)) nil))
-;;
+
 ;; (define-generic-structure-reader head-number (head)
 ;;   (:method ((object null)) nil))
 
