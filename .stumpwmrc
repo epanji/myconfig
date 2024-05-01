@@ -13,28 +13,34 @@
 ;;; keysym Caps_Lock = Control_L
 (run-shell-command "xmodmap ~/.xmodmaprc &> /dev/null")
 
-;;; Start amixer
 (load-module "amixer")
-(define-interactive-keymap volume-control ()
-  ((kbd ".") "amixer-master-1+")
-  ((kbd ",") "amixer-master-1-")
-  ((kbd "C-.") "exit-volume-control")
-  ((kbd "C-,") "exit-volume-control"))
-(define-key *root-map* (kbd ".") "volume-control")
-(define-key *root-map* (kbd ",") "volume-control")
-;;; End amixer
-
 (load-module "stump-backlight")
-(load-module "stump-volume-control")
+
+;;; This is for my dead Fn Key.
+(define-interactive-keymap fn-control ()
+  ((kbd "F1") "suspend")
+  ((kbd "F2") "exec /usr/sbin/rfkill toggle wlan")
+  ((kbd "F10") "amixer-master-toggle")
+  ((kbd "F11") "amixer-master-1-")
+  ((kbd "F12") "amixer-master-1+")
+  ((kbd "F5") "backlight-decrease")
+  ((kbd "F6") "backlight-increase")
+  ((kbd "SPC") "exec")
+  ((kbd "c") "exec xfce4-appfinder --collapsed")
+  ((kbd "F7") "exec xlock")
+  ((kbd "v") "exec kamoso")
+  ((kbd "F4") "exec firefox")
+  ((kbd "F3") "exec pidgin")
+  ((kbd "s-f") "exit-fn-control"))
+(define-key *root-map* (kbd "s-f") "fn-control")
 
 (setf *window-number-map* "1234567890")
+(setf *window-format* "%m%n%s%20i")
 (setf *mouse-focus-policy* :click) ;; :click, :ignore, :sloppy
+(setf *default-group-name* "Default")
 ;; (setf *default-selections* '(:clipboard nil))
 ;; (setf *input-completion-style* (make-input-completion-style-unambiguous))
-;; (change-default-layout :right)
-;; (change-default-split-ratio 4/5)
 
-(define-key *root-map* (kbd "M-l") "exec xlock")
 (define-key *root-map* (kbd "C-p") "mode-line")
 (define-key *root-map* (kbd "C-q") "echo-sensors")
 (define-key *root-map* (kbd "C-f") "echo-fortune")
@@ -45,8 +51,9 @@
 (define-key *root-map* (kbd "]") "resize-increment 10 y")
 (define-key *root-map* (kbd "C-w") "windowlist")
 (define-key *root-map* (kbd "C-DEL") "gc")
+(define-key *root-map* (kbd "C-z") "suspend")
+(define-key *root-map* (kbd "s-q") "power-off")
 ;; (define-key *root-map* (kbd "s-q") "exec loginctl poweroff")
-;; (define-key *root-map* (kbd "C-z") "suspend")
 
 (defcommand gc () ()
   (sb-ext:gc :full t)
@@ -92,7 +99,9 @@
 (defun idle-suspend (&optional (secs 300) debugp)
   (let ((idle (idle-time (current-screen)))
         (windows (mapcar 'window-class (all-windows)))
-        (exceptions (list "MPlayer" "xine" "Player" "QMLPlayer" "dragonplayer" "mGBA" "mgba")))
+        (exceptions (list "smplayer" "MPlayer" "xine"
+                          "Player" "QMLPlayer" "dragonplayer"
+                          "mGBA" "mgba" "GStreamer")))
     (if (and (< secs idle)
              (null (intersection windows exceptions :test 'string=)))
         (suspend)
@@ -101,31 +110,37 @@
 (defvar *suspend-timer* (run-with-timer 0 60 'idle-suspend 300 nil))
 
 (defcommand run-suspend-timer () ()
-  (when (and (timer-p *suspend-timer*)
-             (not (find *suspend-timer* *timer-list*)))
-    (schedule-timer *suspend-timer* 10)
-    (labels ((append-to-list ()
-               (sb-thread:with-mutex (*timer-list-lock*)
-                 (setf *timer-list*
-                       (merge 'list *timer-list* (list *suspend-timer*)
-                              #'< :key #'timer-time)))))
-      (call-in-main-thread #'append-to-list)))
-  (message "~{~A~%~}" *timer-list*))
+  (flet ((suspend-timer-not-running-p ()
+           (and (timer-p *suspend-timer*)
+                (not (find *suspend-timer* *timer-list*))))
+         (register-suspend-timer ()
+           (sb-thread:with-mutex (*timer-list-lock*)
+             (setf *timer-list* (stable-sort
+                                 (list* *suspend-timer* *timer-list*)
+                                 #'< :key #'timer-time)))))
+    (when (suspend-timer-not-running-p)
+      (schedule-timer *suspend-timer* 10)
+      (call-in-main-thread #'register-suspend-timer))
+    (message "~{~A~%~}" *timer-list*)))
 
 (defcommand cancel-suspend-timer () ()
-  (if (and (timer-p *suspend-timer*)
-           (find *suspend-timer* *timer-list*))
-      (progn (cancel-timer *suspend-timer*)
-             (message "Suspend timer cancelled."))
-      (message "No suspend timer.")))
+  (flet ((suspend-timer-is-running-p ()
+           (and (timer-p *suspend-timer*)
+                (find *suspend-timer* *timer-list*)))
+         (unregister-suspend-timer ()
+           (cancel-timer *suspend-timer*)
+           (message "Suspend timer cancelled.")))
+    (if (suspend-timer-is-running-p)
+        (unregister-suspend-timer)
+        (message "No suspend timer."))))
 
 ;; Need feh application.
 (run-shell-command
- (format nil "feh ~A ~A" "--bg-scale"
-         (merge-pathnames
-          (format nil "Pictures/background-~3,'0D.png"
-                  (1+ (random 10)))
-          (user-homedir-pathname))))
+ (format nil "feh --bg-scale ~A"
+         (alexandria:random-elt
+          (directory (merge-pathnames
+                      "Pictures/background*.*"
+                      (user-homedir-pathname))))))
 
 (defcommand echo-sensors () ()
   (message "~A" (subseq (run-shell-command "sensors asus-isa-0000 | grep temp1:" t) 12)))
@@ -171,7 +186,8 @@
   (1 t nil :class "MPlayer")
   (2 t nil :class "XTerm")
   (:float t nil :class "xine")
-  (:float t nil :title "SANVERTER"))
+  (:float t nil :title "SANVERTER")
+  (:float t nil :class "Xfce4-appfinder"))
 
 ;; (define-frame-preference "Emacs" (1 t nil :title "Demo")
 ;;   (0 t t :restore "Emacs" :class "Emacs"))
@@ -190,33 +206,3 @@
   (set-float-unfocus-color "gray65")
   (update-color-map (current-screen)))
 ;;; End Theme
-
-;;; Start patches
-(ql:quickload :generic-structure-reader)
-(cl:use-package :generic-structure-reader)
-
-(define-generic-structure-reader mode-line-height (mode-line)
-  (:method ((object null)) 0))
-
-;; (define-generic-structure-reader frame-number (frame)
-;;   (:method ((object null)) nil))
-
-;; (define-generic-structure-reader head-number (head)
-;;   (:method ((object null)) nil))
-
-;; (define-generic-structure-reader frame-x (frame)
-;;   (:method ((object null)) 0))
-
-;; (define-generic-structure-reader frame-y (frame)
-;;   (:method ((object null)) 0))
-
-;; (define-generic-structure-reader head-x (head)
-;;   (:method ((object null)) 0))
-
-;; (define-generic-structure-reader head-y (head)
-;;   (:method ((object null)) 0))
-
-(defun window-property (window prop)
-  (handler-case (xlib:get-property (window-xwin window) prop)
-    (xlib:window-error () (delete-window window) nil)))
-;;; End patches
